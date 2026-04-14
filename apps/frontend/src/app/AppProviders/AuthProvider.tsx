@@ -2,7 +2,6 @@
 
 import MainLayout from '../components/layoutsDashboard/MainLayout';
 import { AuthProvider } from '../contexts/AuthContext';
-import { SidebarProvider } from '../contexts/SiderbarContext';
 
 export default function AppProviders({
   children,
@@ -11,9 +10,7 @@ export default function AppProviders({
 }) {
   return (
     <AuthProvider>
-      <SidebarProvider>
-        <MainLayout>{children}</MainLayout>
-      </SidebarProvider>
+      <MainLayout>{children}</MainLayout>
     </AuthProvider>
   );
 }
