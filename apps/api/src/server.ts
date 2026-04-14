@@ -4,6 +4,10 @@ import cors from 'cors';
 import connetDB from './config/db';
 import { errorHandler } from './middlewares/errorHandler';
 import { seedSuperAdmin } from './utils/seeder';
+import authRoutes from './routes/auth.routes';
+import userRoutes from './routes/user.routes';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
 
 // ==============================================================================
 // GESTION DES EXCEPTIONS NON CAPTURÉES (Doit être tout en haut du fichier)
@@ -43,6 +47,9 @@ app.get('/api/v1/health', (req: Request, res: Response) => {
     timestamp: new Date().toISOString(),
   });
 });
+app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec)); // Documentation Swagger
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/users', userRoutes);
 
 // ==============================================================================
 // GESTION DES ROUTES INCONNUES (Erreur 404)
