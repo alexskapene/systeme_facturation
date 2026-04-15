@@ -5,6 +5,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '@/store/slices/authSlice';
 import { RootState, AppDispatch } from '@/store/store';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import logo from '@/assets/logo_eTax.png';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -31,10 +33,15 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-10">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-blue-900">eTax RDC</h1>
-          <p className="text-slate-500 mt-2">Accès au portail de facturation</p>
+      <div className="w-full md:w-1/2 h-auto  bg-secondary  rounded-2xl shadow-xl p-20">
+        <div className="flex flex-col justify-center items-center text-center space-y-4 mb-8">
+          <Image src={logo} alt="Logo eTax" width={50} height={50} />
+          <h1 className="text-3xl font-extrabold text-primary ">
+            eTax <span className="font-semibold">facturation</span>RDC
+          </h1>
+          <p className="text-secondary-foreground mt-2">
+            Accès au portail de facturation
+          </p>
         </div>
 
         {error && (
@@ -43,7 +50,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="w-full px-12 space-y-5 ">
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">
               Email
@@ -52,7 +59,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/75 outline-none transition-all"
               placeholder="admin@etax.cd"
               required
             />
@@ -65,14 +72,14 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/75 outline-none transition-all"
               required
             />
           </div>
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-700 text-white py-3 rounded-lg font-bold hover:bg-blue-800 disabled:bg-blue-300 transition-colors shadow-lg shadow-blue-200"
+            className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-primary/75 disabled:bg-primary-foreground transition-colors shadow-lg shadow-primary"
           >
             {isLoading ? 'Authentification...' : 'Se connecter'}
           </button>
