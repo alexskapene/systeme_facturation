@@ -1,5 +1,6 @@
 import React from 'react';
 import Sidebar from '@/components/sidebar';
+import Topbar from '@/components/navbar';
 
 export default function DashboardLayout({
   children,
@@ -13,8 +14,7 @@ export default function DashboardLayout({
 
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Header : Barre supérieure avec infos utilisateur */}
-        {/* <Header /> */}
-
+        <Topbar />
         {/* Contenu principal : Scrollable */}
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto">{children}</div>
