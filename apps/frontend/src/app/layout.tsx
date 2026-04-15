@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import AppProviders from './AppProviders/AuthProvider';
+import AppProviders from '@/AppProviders/AppProviders';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -25,10 +25,11 @@ export default function RootLayout({
 }) {
   return (
     <html
-      lang="en"
+      lang="fr" // Changé en "fr" pour le contexte RDC
       className={`${geistSans.variable} ${geistMono.variable} h-full`}
     >
-      <body>
+      <body className="h-full antialiased bg-slate-50 text-slate-900">
+        {/* On enveloppe toute l'application avec les Providers Redux et Auth */}
         <AppProviders>{children}</AppProviders>
       </body>
     </html>
