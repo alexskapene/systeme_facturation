@@ -1,8 +1,13 @@
 import { Router, Request, Response } from 'express';
+import { swaggerSpec } from '../config/swagger';
 import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import swaggerUi from 'swagger-ui-express';
-import { swaggerSpec } from '../config/swagger';
+import supplierRoutes from './supplier.routes';
+import productRoutes from './product.routes';
+import stockRoutes from './stock.routes';
+import clientRoutes from './client.route';
+import invoiceRoutes from './invoice.routes';
 
 const router = Router();
 
@@ -21,5 +26,10 @@ router.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Modules applicatifs
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
+router.use('/products', productRoutes);
+router.use('/suppliers', supplierRoutes);
+router.use('/stock', stockRoutes);
+router.use('/clients', clientRoutes);
+router.use('/invoices', invoiceRoutes);
 
 export default router;
