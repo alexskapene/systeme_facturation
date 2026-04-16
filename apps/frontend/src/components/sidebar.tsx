@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
+import Image from 'next/image';
+import logo from '../assets/logo_eTax.png';
 import {
   Home,
   Users,
@@ -11,7 +13,6 @@ import {
   Package,
   Settings,
   LogOut,
-  Receipt,
   ShoppingCart,
   Truck,
   ArrowLeftRight,
@@ -70,22 +71,22 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       >
         {/* Logo - Fixed at top */}
         <div className="flex h-16 shrink-0 items-center gap-3 px-4 border-b border-sidebar-border">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sidebar-accent">
-            <Receipt className="h-5 w-5" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+            <Image src={logo} alt="Logo" className="h-7 w-5" />
           </div>
           <span
             className={cn(
-              'text-lg font-semibold whitespace-nowrap transition-opacity duration-300',
+              'text-md font-extrabold text-primary whitespace-nowrap transition-opacity duration-300',
               isOpen ? 'opacity-100' : 'lg:opacity-0 lg:w-0 lg:overflow-hidden',
             )}
           >
-            systeme_facturation
+            eTax Facturation RDC
           </span>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <div className="space-y-1">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 ">
+          <div className="space-y-4">
             {navItems.map((item) => {
               const isActive =
                 pathname === item.href ||
