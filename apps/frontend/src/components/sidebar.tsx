@@ -61,7 +61,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex flex-col bg-sidebar text-sidebar-foreground transition-all duration-300 lg:relative',
+          'fixed inset-y-0 left-0 z-50 flex flex-col bg-primary text-secondary transition-all duration-300 lg:relative',
           // Mobile: slide in/out
           isOpen ? 'translate-x-0' : '-translate-x-full',
           // Desktop: always visible, just change width
@@ -71,12 +71,12 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       >
         {/* Logo - Fixed at top */}
         <div className="flex h-16 shrink-0 items-center gap-3 px-4 border-b border-sidebar-border">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+          <div className="flex h-10 w-10 invert brightness-0 shrink-0 items-center justify-center rounded-lg">
             <Image src={logo} alt="Logo" className="h-7 w-5" />
           </div>
           <span
             className={cn(
-              'text-md font-extrabold text-primary whitespace-nowrap transition-opacity duration-300',
+              'text-md font-extrabold text-secondary whitespace-nowrap transition-opacity duration-300',
               isOpen ? 'opacity-100' : 'lg:opacity-0 lg:w-0 lg:overflow-hidden',
             )}
           >
@@ -88,9 +88,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         <nav className="flex-1 overflow-y-auto px-3 py-4 ">
           <div className="space-y-4">
             {navItems.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== '/dashboard' && pathname.startsWith(item.href));
+              const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.href}
@@ -100,7 +98,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                     'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                     isActive
                       ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
+                      : 'text-secondary hover:bg-secondary/50 hover:text-primary',
                     !isOpen && 'lg:justify-center lg:px-2',
                   )}
                 >
@@ -125,7 +123,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             onClick={logout}
             title={!isOpen ? 'Deconnexion' : undefined}
             className={cn(
-              'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
+              'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm  font-extrabold text-secondary/80 transition-colors hover:bg-secondary/50 hover:text-primary',
               !isOpen && 'lg:justify-center lg:px-2',
             )}
           >
