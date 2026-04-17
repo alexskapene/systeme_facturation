@@ -206,8 +206,8 @@ export default function TransactionsPage() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button className="text-secondary font-bold hover:scale-[1.02] transition-transform">
+              <Plus className="mr-2 h-4 w-4 text-secondary  " />
               Nouvelle Transaction
             </Button>
           </DialogTrigger>
@@ -299,13 +299,18 @@ export default function TransactionsPage() {
                 className="pl-9"
               />
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center  gap-2">
               {filterButtons.map((filter) => (
                 <Button
                   key={filter.value}
                   variant={typeFilter === filter.value ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setTypeFilter(filter.value)}
+                  className={
+                    typeFilter === filter.value
+                      ? 'text-secondary'
+                      : 'text-primary'
+                  }
                 >
                   {filter.label}
                 </Button>
