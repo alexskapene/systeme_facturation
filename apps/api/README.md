@@ -82,7 +82,7 @@ Le système est une **application interne**. L'inscription publique est désacti
 ## 📖 Documentation de l'API
 
 Une fois le serveur lancé, la documentation interactive (Swagger) est disponible ici :
-👉 `http://localhost:5000/api/v1/docs`
+👉 `http://localhost:5001/api/v1/docs`
 
 ---
 
