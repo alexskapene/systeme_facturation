@@ -6,6 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -49,6 +57,20 @@ export default function FournisseursPage() {
     rccm: '',
     address: '',
   });
+
+  const filteredSuppliers = suppliers.filter((supplier) =>
+    [
+      supplier.name,
+      supplier.email ?? '',
+      supplier.phone,
+      supplier.nif ?? '',
+      supplier.rccm ?? '',
+      supplier.address ?? '',
+    ]
+      .join(' ')
+      .toLowerCase()
+      .includes(search.toLowerCase()),
+  );
 
   const handleOpenDialog = (supplier?: Supplier) => {
     if (supplier) {
@@ -245,110 +267,63 @@ export default function FournisseursPage() {
         </CardContent>
       </Card>
 
-      {/* Formulaire d'insertion */}
       <Card>
-        <CardContent className="p-4">
+        <CardContent className="p-4 pb-0">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-foreground">
-                Insertion de fournisseur
+                Liste des fournisseurs
               </h2>
               <p className="text-sm text-muted-foreground">
-                Remplissez le formulaire ci-dessous pour ajouter un fournisseur.
+                Affiche les fournisseurs enregistrés avec leurs informations.
               </p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleOpenDialog()}
-              className="transition-transform duration-150 ease-out transform hover:-translate-y-0.5 hover:shadow-lg active:scale-95 active:shadow-inner"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Ouvrir la modification
-            </Button>
+            <span className="text-sm text-muted-foreground">
+              {filteredSuppliers.length} fournisseur
+              {filteredSuppliers.length > 1 ? 's' : ''}
+            </span>
           </div>
-
-          <form onSubmit={handleSubmit} className="mt-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nom</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  placeholder="Nom du fournisseur"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  placeholder="email@exemple.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Téléphone</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  placeholder="123-456-789"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="nif">NIF</Label>
-                <Input
-                  id="nif"
-                  value={formData.nif}
-                  onChange={(e) =>
-                    setFormData({ ...formData, nif: e.target.value })
-                  }
-                  placeholder="NIF du fournisseur"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="rccm">RCCM</Label>
-                <Input
-                  id="rccm"
-                  value={formData.rccm}
-                  onChange={(e) =>
-                    setFormData({ ...formData, rccm: e.target.value })
-                  }
-                  placeholder="RCCM du fournisseur"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">Adresse</Label>
-                <Input
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                  placeholder="Adresse du fournisseur"
-                />
-              </div>
-            </div>
-            <Button
-              type="submit"
-              className="mt-4 w-full transition-transform duration-150 ease-out transform hover:-translate-y-0.5 hover:shadow-lg active:scale-95 active:shadow-inner"
-            >
-              {editingSupplier
-                ? 'Modifier le fournisseur'
-                : 'Ajouter le fournisseur'}
-            </Button>
-          </form>
+        </CardContent>
+        <CardContent className="p-0 overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nom</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Téléphone</TableHead>
+                <TableHead>NIF</TableHead>
+                <TableHead>RCCM</TableHead>
+                <TableHead>Adresse</TableHead>
+                <TableHead>Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredSuppliers.length > 0 ? (
+                filteredSuppliers.map((supplier) => (
+                  <TableRow key={supplier.id}>
+                    <TableCell className="font-medium">
+                      {supplier.name}
+                    </TableCell>
+                    <TableCell>{supplier.email ?? '-'}</TableCell>
+                    <TableCell>{supplier.phone}</TableCell>
+                    <TableCell>{supplier.nif ?? '-'}</TableCell>
+                    <TableCell>{supplier.rccm ?? '-'}</TableCell>
+                    <TableCell>{supplier.address ?? '-'}</TableCell>
+                    <TableCell>{supplier.createdAt}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="h-24 text-center text-sm text-muted-foreground"
+                  >
+                    Aucun fournisseur trouvé.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
