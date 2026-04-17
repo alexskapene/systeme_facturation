@@ -6,14 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -27,71 +19,74 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Plus,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  Pencil,
-  Trash2,
-} from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 
-type Client = {
+type Supplier = {
   id: string;
   name: string;
-  email: string;
+  email?: string;
   phone: string;
+  nif?: string;
+  rccm?: string;
+  address?: string;
+  createdBy?: string;
+  active?: boolean;
   createdAt: string;
 };
 
-const initialClients: Client[] = [];
+const initialSuppliers: Supplier[] = [];
 
-export default function ClientsPage() {
-  const [clients, setClients] = useState<Client[]>(initialClients);
+export default function FournisseursPage() {
+  const [suppliers, setSuppliers] = useState<Supplier[]>(initialSuppliers);
   const [search, setSearch] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
-  const itemsPerPage = 10;
+  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    nif: '',
+    rccm: '',
+    address: '',
+  });
 
-  const filteredClients = clients.filter(
-    (client) =>
-      client.name.toLowerCase().includes(search.toLowerCase()) ||
-      client.phone.includes(search),
-  );
-
-  const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
-  const paginatedClients = filteredClients.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
-
-  const handleOpenDialog = (client?: Client) => {
-    if (client) {
-      setEditingClient(client);
+  const handleOpenDialog = (supplier?: Supplier) => {
+    if (supplier) {
+      setEditingSupplier(supplier);
       setFormData({
-        name: client.name,
-        email: client.email,
-        phone: client.phone,
+        name: supplier.name,
+        email: supplier.email ?? '',
+        phone: supplier.phone,
+        nif: supplier.nif ?? '',
+        rccm: supplier.rccm ?? '',
+        address: supplier.address ?? '',
       });
     } else {
-      setEditingClient(null);
-      setFormData({ name: '', email: '', phone: '' });
+      setEditingSupplier(null);
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        nif: '',
+        rccm: '',
+        address: '',
+      });
     }
     setIsDialogOpen(true);
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (editingClient) {
-      setClients(
-        clients.map((c) =>
-          c.id === editingClient.id ? { ...c, ...formData } : c,
+    if (editingSupplier) {
+      setSuppliers(
+        suppliers.map((supplier) =>
+          supplier.id === editingSupplier.id
+            ? { ...supplier, ...formData }
+            : supplier,
         ),
       );
     } else {
-      const newClient: Client = {
+      const newSupplier: Supplier = {
         id: String(Date.now()),
         ...formData,
         createdAt: new Date().toLocaleDateString('fr-FR', {
@@ -100,77 +95,117 @@ export default function ClientsPage() {
           year: 'numeric',
         }),
       };
-      setClients([...clients, newClient]);
+      setSuppliers([...suppliers, newSupplier]);
     }
     setIsDialogOpen(false);
-    setFormData({ name: '', email: '', phone: '' });
-  };
-
-  const handleDelete = (id: string) => {
-    setClients(clients.filter((c) => c.id !== id));
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      nif: '',
+      rccm: '',
+      address: '',
+    });
   };
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Clients</h1>
+        <h1 className="text-2xl font-bold text-foreground">Fournisseurs</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => handleOpenDialog()}>
+            <Button
+              onClick={() => handleOpenDialog()}
+              className="transition-transform duration-150 ease-out transform hover:-translate-y-0.5 hover:shadow-lg active:scale-95 active:shadow-inner"
+            >
               <Plus className="mr-2 h-4 w-4" />
-              Nouveau Client
+              Nouveau fournisseur
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {editingClient
-                  ? 'Modifier le client'
-                  : 'Ajouter un nouveau client'}
+                {editingSupplier
+                  ? 'Modifier le fournisseur'
+                  : 'Ajouter un nouveau fournisseur'}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nom</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    placeholder="Nom du client"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    placeholder="email@exemple.com"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Telephone</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
-                    }
-                    placeholder="123-456-789"
-                    required
-                  />
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Nom</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      placeholder="Nom du fournisseur"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                      placeholder="email@exemple.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Téléphone</Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
+                      placeholder="123-456-789"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="nif">NIF</Label>
+                    <Input
+                      id="nif"
+                      value={formData.nif}
+                      onChange={(e) =>
+                        setFormData({ ...formData, nif: e.target.value })
+                      }
+                      placeholder="NIF du fournisseur"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="rccm">RCCM</Label>
+                    <Input
+                      id="rccm"
+                      value={formData.rccm}
+                      onChange={(e) =>
+                        setFormData({ ...formData, rccm: e.target.value })
+                      }
+                      placeholder="RCCM du fournisseur"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Adresse</Label>
+                    <Input
+                      id="address"
+                      value={formData.address}
+                      onChange={(e) =>
+                        setFormData({ ...formData, address: e.target.value })
+                      }
+                      placeholder="Adresse du fournisseur"
+                    />
+                  </div>
                 </div>
                 <Button type="submit" className="w-full">
-                  {editingClient ? 'Modifier' : 'Ajouter'}
+                  {editingSupplier ? 'Modifier' : 'Ajouter'}
                 </Button>
               </div>
             </form>
@@ -185,7 +220,7 @@ export default function ClientsPage() {
             <div className="relative max-w-sm flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Recherche des clients ..."
+                placeholder="Recherche des fournisseurs ..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
@@ -197,11 +232,11 @@ export default function ClientsPage() {
               </Button>
               <Select defaultValue="all">
                 <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Filtrers" />
+                  <SelectValue placeholder="Filtrer" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tous</SelectItem>
-                  <SelectItem value="recent">Recents</SelectItem>
+                  <SelectItem value="recent">Récents</SelectItem>
                   <SelectItem value="oldest">Anciens</SelectItem>
                 </SelectContent>
               </Select>
@@ -210,89 +245,110 @@ export default function ClientsPage() {
         </CardContent>
       </Card>
 
-      {/* Table */}
+      {/* Formulaire d'insertion */}
       <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Client</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Telephone</TableHead>
-                <TableHead>Date d&apos;inscript</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedClients.map((client) => (
-                <TableRow key={client.id}>
-                  <TableCell className="font-medium">{client.name}</TableCell>
-                  <TableCell>{client.email}</TableCell>
-                  <TableCell>{client.phone}</TableCell>
-                  <TableCell>{client.createdAt}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleOpenDialog(client)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                        <span className="sr-only">Modifier</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(client.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Supprimer</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-
-          {/* Pagination */}
-          <div className="flex items-center justify-between border-t px-4 py-3">
-            <p className="text-sm text-muted-foreground">
-              Page {currentPage} sur {totalPages || 1}
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-              >
-                <ChevronLeft className="mr-1 h-4 w-4" />
-                Prec.
-              </Button>
-              <Select value={String(itemsPerPage)}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10 lignes par page</SelectItem>
-                  <SelectItem value="20">20 lignes par page</SelectItem>
-                  <SelectItem value="50">50 lignes par page</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setCurrentPage(Math.min(totalPages, currentPage + 1))
-                }
-                disabled={currentPage >= totalPages}
-              >
-                Suiv.
-                <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
+        <CardContent className="p-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">
+                Insertion de fournisseur
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Remplissez le formulaire ci-dessous pour ajouter un fournisseur.
+              </p>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleOpenDialog()}
+              className="transition-transform duration-150 ease-out transform hover:-translate-y-0.5 hover:shadow-lg active:scale-95 active:shadow-inner"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Ouvrir la modification
+            </Button>
           </div>
+
+          <form onSubmit={handleSubmit} className="mt-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nom</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  placeholder="Nom du fournisseur"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  placeholder="email@exemple.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Téléphone</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
+                  placeholder="123-456-789"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="nif">NIF</Label>
+                <Input
+                  id="nif"
+                  value={formData.nif}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nif: e.target.value })
+                  }
+                  placeholder="NIF du fournisseur"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="rccm">RCCM</Label>
+                <Input
+                  id="rccm"
+                  value={formData.rccm}
+                  onChange={(e) =>
+                    setFormData({ ...formData, rccm: e.target.value })
+                  }
+                  placeholder="RCCM du fournisseur"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Adresse</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) =>
+                    setFormData({ ...formData, address: e.target.value })
+                  }
+                  placeholder="Adresse du fournisseur"
+                />
+              </div>
+            </div>
+            <Button
+              type="submit"
+              className="mt-4 w-full transition-transform duration-150 ease-out transform hover:-translate-y-0.5 hover:shadow-lg active:scale-95 active:shadow-inner"
+            >
+              {editingSupplier
+                ? 'Modifier le fournisseur'
+                : 'Ajouter le fournisseur'}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>
