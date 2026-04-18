@@ -44,18 +44,20 @@ export default function Sidebar({ isExpanded }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'flex flex-col bg-white border-r transition-all duration-300',
-        isExpanded ? 'w-[260px]' : 'w-[80px]',
+        'flex flex-col bg-primary border-r transition-all duration-300',
+        isExpanded ? 'w-[250px]' : 'w-[80px]',
       )}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 p-4 border-b">
-        <Image src={logo} alt="Logo" className="h-7 w-5" />
-        {isExpanded && <span className="font-bold">eTax</span>}
+      <div className=" w-full flex items-start font-bold gap-3 p-4 pb-5 border-b border-secondary/25">
+        <Image src={logo} alt="Logo" className="h-7 w-5 invert brightness-0" />
+        {isExpanded && (
+          <span className=" text-secondary">eTax Facturation RDC</span>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4">
+      <nav className="flex-1 space-y-4 px-3 py-4">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
 
@@ -66,8 +68,8 @@ export default function Sidebar({ isExpanded }: SidebarProps) {
               className={cn(
                 'flex items-center gap-3 p-2 rounded-lg',
                 isActive
-                  ? 'bg-blue-500 text-white'
-                  : 'text-gray-600 hover:bg-gray-100',
+                  ? 'bg-secondary text-primary'
+                  : 'text-secondary hover:bg-secondary/10 hover:text-secondary',
               )}
             >
               <item.icon className="h-5 w-5" />
@@ -79,7 +81,10 @@ export default function Sidebar({ isExpanded }: SidebarProps) {
 
       {/* Logout */}
       <div className="p-4 border-t">
-        <button onClick={logout} className="flex items-center gap-3 w-full">
+        <button
+          onClick={logout}
+          className="flex items-center text-secondary gap-3 w-full "
+        >
           <LogOut className="h-5 w-5" />
           {isExpanded && <span>Déconnexion</span>}
         </button>
