@@ -1,12 +1,26 @@
 'use client';
 
-import React from 'react';
-import { Users, FileText, Package, Euro, ChevronRight } from 'lucide-react';
+import React, { useEffect } from 'react';
+import {
+  Users,
+  FileText,
+  Package,
+  TrendingUp,
+  AlertTriangle,
+  ChevronRight,
+  Clock,
+  Loader2,
+  Euro,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { fetchDashboardStats } from '@/store/slices/dashboardSlice';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
 
 interface StatCardProps {
   title: string;
-  value: string;
+  value: string | number;
   icon: React.ElementType;
   iconColor: string;
   iconBg: string;
@@ -36,197 +50,275 @@ const StatCard = ({
   </div>
 );
 
-interface Invoice {
-  id: string;
-  client: string;
-  amount: string;
-  status: string;
-  statusColor: string;
-}
-
-interface Product {
-  name: string;
-  sales: string;
-  iconBg: string;
-}
-
 const DashboardPage = () => {
-  const recentInvoices: Invoice[] = [
-    {
-      id: 'INV-001',
-      client: 'Jean Dupont',
-      amount: '€ 500.00',
-      status: 'Payée',
-      statusColor: 'bg-[#4CAF50] text-white',
-    },
-    {
-      id: 'INV-002',
-      client: 'Marie Martin',
-      amount: '€ 300.00',
-      status: 'En attente',
-      statusColor: 'bg-[#ffc107]/80 text-[#856404]',
-    },
-    {
-      id: 'INV-003',
-      client: 'Paul Lefevre',
-      amount: '€ 750.00',
-      status: 'En retard',
-      statusColor: 'bg-[#F44336] text-white',
-    },
-  ];
-  const topProducts: Product[] = [
-    {
-      name: 'Produit A',
-      sales: '150 Ventes',
-      iconBg: 'bg-blue-50  text-blue-500',
-    },
-    {
-      name: 'Produit B',
-      sales: '90 Ventes',
-      iconBg: 'bg-amber-50 text-amber-500',
-    },
-    {
-      name: 'Produit C',
-      sales: '60 Ventes',
-      iconBg: 'bg-rose-50  text-rose-500',
-    },
-  ];
+  const dispatch = useAppDispatch();
+  const { stats, isLoading, error } = useAppSelector(
+    (state) => state.dashboard,
+  );
 
-  return (
-    <div className="flex flex-col gap-10">
-      {/* Header */}
-      <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-black text-[#1e293b]">Tableau de Bord</h1>
-        <p className="text-slate-400 font-bold">
-          Bienvenue sur le tableau de bord!
+  useEffect(() => {
+    dispatch(fetchDashboardStats());
+  }, [dispatch]);
+
+  if (isLoading && !stats) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="text-muted-foreground font-medium">
+          Chargement des statistiques...
         </p>
       </div>
+    );
+  }
+
+  const summary = stats?.summary || {
+    totalRevenue: 0,
+    totalInvoices: 0,
+    totalClients: 0,
+    lowStockCount: 0,
+  };
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black text-foreground tracking-tight flex items-center gap-3">
+            Tableau de Bord
+          </h1>
+          <p className="text-muted-foreground font-medium mt-1">
+            Résumé de l'activité commerciale et de l'état des stocks.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground bg-muted/50 px-4 py-2 rounded-lg border">
+          <Clock size={16} />
+          Dernière mise à jour: {new Date().toLocaleTimeString()}
+        </div>
+      </div>
+
+      {error && (
+        <div className="bg-destructive/10 text-destructive p-4 rounded-xl border border-destructive/20 text-sm font-medium">
+          Impossible de charger les statistiques : {error}
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total Clients"
-          value="120"
-          icon={Users}
-          iconBg="bg-transparent"
-          iconColor="text-blue-600 fill-blue-600"
+          title="Chiffre d'Affaires"
+          value={`${summary.totalRevenue.toLocaleString()} $`}
+          icon={Euro}
+          iconBg="bg-blue-600 rounded-full h-12 w-12"
+          iconColor="text-white"
         />
         <StatCard
           title="Total Factures"
-          value="75"
+          value={summary.totalInvoices}
           icon={FileText}
           iconBg="bg-transparent"
           iconColor="text-blue-500 fill-blue-500"
         />
         <StatCard
-          title="Produits Total"
-          value="45"
-          icon={Package}
+          title="Total Clients"
+          value={summary.totalClients}
+          icon={Users}
           iconBg="bg-transparent"
-          iconColor="text-amber-500 fill-amber-500"
+          iconColor="text-blue-600 fill-blue-600"
         />
         <StatCard
-          title="Revenu Total"
-          value="€12,500"
-          icon={Euro}
-          iconBg="bg-blue-600 rounded-full h-12 w-12"
-          iconColor="text-white"
+          title="Alertes Stock"
+          value={summary.lowStockCount}
+          icon={AlertTriangle}
+          iconBg="bg-transparent"
+          iconColor="text-rose-500 fill-rose-500"
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Dernières Factures */}
-        <div className="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
-          <div className="px-8 py-7 border-b border-slate-50">
-            <h3 className="text-xl font-bold text-slate-800">
-              Dernières Factures
-            </h3>
-          </div>
-
-          <div className="px-6 py-4 flex-1 overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-[#f1f5f9]">
-                <tr className="text-sm font-semibold text-slate-600 text-left">
-                  <th className="px-6 py-4 rounded-tl-md">Facture</th>
-                  <th className="px-6 py-4">Client</th>
-                  <th className="px-6 py-4">Montant</th>
-                  <th className="px-6 py-4 rounded-tr-md">Statut</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100/50">
-                {recentInvoices.map((inv) => (
-                  <tr
-                    key={inv.id}
-                    className="group border-b border-slate-50 last:border-0 hover:bg-slate-50/40 transition-all"
-                  >
-                    <td className="px-6 py-4 text-sm font-semibold text-slate-700">
-                      {inv.id}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">
-                      {inv.client}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-700">
-                      {inv.amount}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={cn(
-                          'inline-flex items-center justify-center px-4 py-1.5 rounded-md text-[13px] font-medium tracking-wide',
-                          inv.statusColor,
-                        )}
-                      >
-                        {inv.status}
-                      </span>
-                    </td>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Dernières Ventes */}
+        <Card className="lg:col-span-2 border-none shadow-sm overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/30">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              Ventes Récentes
+            </CardTitle>
+            <Link
+              href="/factures"
+              className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+            >
+              Voir tout <ChevronRight size={14} />
+            </Link>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="text-xs font-bold text-muted-foreground uppercase bg-muted/20 border-b">
+                  <tr>
+                    <th className="px-6 py-4">Facture</th>
+                    <th className="px-6 py-4">Client</th>
+                    <th className="px-6 py-4 text-right">Montant</th>
+                    <th className="px-6 py-4 text-center">Statut</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y">
+                  {stats?.recentInvoices.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={4}
+                        className="px-6 py-10 text-center text-muted-foreground italic"
+                      >
+                        Aucune vente récente.
+                      </td>
+                    </tr>
+                  ) : (
+                    stats?.recentInvoices.map((inv) => (
+                      <tr
+                        key={inv._id}
+                        className="hover:bg-muted/30 transition-colors"
+                      >
+                        <td className="px-6 py-4 text-sm font-bold text-slate-700">
+                          {inv.invoiceNumber}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium">
+                          {inv.client?.firstName} {inv.client?.name}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-black text-right text-primary">
+                          {inv.totalTTC.toLocaleString()} $
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span
+                            className={cn(
+                              'px-2.5 py-1 rounded-full text-[11px] font-black uppercase border',
+                              inv.status === 'PAID'
+                                ? 'bg-green-100 text-green-700 border-green-200'
+                                : inv.status === 'PENDING'
+                                  ? 'bg-amber-100 text-amber-700 border-amber-200'
+                                  : 'bg-rose-100 text-rose-700 border-rose-200',
+                            )}
+                          >
+                            {inv.status === 'PAID'
+                              ? 'Payée'
+                              : inv.status === 'PENDING'
+                                ? 'En attente'
+                                : 'Annulée'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
 
-          <div className="px-12 py-6 bg-slate-50/30 border-t border-slate-50">
-            <button className="text-blue-500 font-bold text-sm flex items-center gap-2 hover:text-blue-600 transition-colors group">
-              Voir toutes
-              <ChevronRight
-                size={18}
-                className="group-hover:translate-x-1 transition-transform"
-              />
-            </button>
+        {/* Alertes Stock Bas */}
+        <Card className="border-none shadow-sm flex flex-col">
+          <CardHeader className="flex flex-row items-center justify-between border-b bg-rose-50/50">
+            <CardTitle className="text-lg font-bold flex items-center gap-2 text-rose-700">
+              <AlertTriangle className="h-5 w-5" />
+              Stock Critique
+            </CardTitle>
+            <Link
+              href="/produit"
+              className="text-xs font-bold text-rose-600 hover:underline"
+            >
+              Gérer
+            </Link>
+          </CardHeader>
+          <CardContent className="p-4 flex-1">
+            <div className="space-y-4">
+              {stats?.lowStockProducts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+                  <Package className="h-10 w-10 opacity-20 mb-2" />
+                  <p className="text-sm italic">Aucune alerte de stock.</p>
+                </div>
+              ) : (
+                stats?.lowStockProducts.map((prod) => (
+                  <div
+                    key={prod._id}
+                    className="flex items-center justify-between p-3 rounded-xl bg-white border border-rose-100 shadow-sm hover:shadow-md transition-all border-l-4 border-l-rose-500"
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-slate-800">
+                        {prod.name}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        Catalogue
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-sm font-black text-rose-600">
+                        {prod.stockQuantity}
+                      </span>
+                      <span className="text-[10px] font-medium text-rose-400">
+                        RESTANT
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            {stats && stats.summary.lowStockCount > 5 && (
+              <p className="text-center text-xs font-bold text-muted-foreground mt-4">
+                + {stats.summary.lowStockCount - 5} autres produits en alerte
+              </p>
+            )}
+          </CardContent>
+          <div className="p-4 bg-muted/20 border-t mt-auto">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-muted-foreground uppercase">
+                Capacité globale
+              </span>
+              <span className="text-xs font-black">92%</span>
+            </div>
+            <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+              <div className="h-full bg-primary w-[92%]" />
+            </div>
           </div>
-        </div>
+        </Card>
+      </div>
 
-        {/* Top Produits */}
-        <div className="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-slate-100 p-8 flex flex-col">
-          <h3 className="text-xl font-bold text-slate-800 mb-8 px-2">
-            Top Produits
-          </h3>
-          <div className="flex flex-col gap-4">
-            {topProducts.map((prod) => (
+      {/* Visual placeholder for Sales trend (CSS Bar Chart) */}
+      <Card className="border-none shadow-sm overflow-hidden">
+        <CardHeader className="bg-muted/30 border-b">
+          <CardTitle className="text-lg font-bold flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            Évolution des Ventes (7 derniers jours)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-8">
+          <div className="flex items-end justify-between h-40 gap-2">
+            {stats?.salesOverTime.map((day) => (
               <div
-                key={prod.name}
-                className="flex items-center gap-4 p-4 rounded-xl border border-slate-50 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer group"
+                key={day._id}
+                className="flex flex-col items-center flex-1 group"
               >
                 <div
-                  className={cn(
-                    'h-12 w-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform',
-                    prod.iconBg,
-                  )}
+                  className="w-full bg-primary/20 rounded-t-lg group-hover:bg-primary transition-all relative"
+                  style={{
+                    height: `${Math.max(10, (day.amount / (Math.max(...stats.salesOverTime.map((d) => d.amount)) || 1)) * 100)}%`,
+                  }}
                 >
-                  <Package size={24} />
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 font-bold">
+                    {day.amount.toLocaleString()} $
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold text-[#1e293b] tracking-tight">
-                    {prod.name}
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
-                    {prod.sales}
-                  </span>
-                </div>
+                <span className="text-[10px] font-bold text-muted-foreground mt-2 rotate-45 sm:rotate-0">
+                  {new Date(day._id).toLocaleDateString('fr-FR', {
+                    weekday: 'short',
+                  })}
+                </span>
               </div>
             ))}
+            {(!stats || stats.salesOverTime.length === 0) && (
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground italic text-sm">
+                Pas assez de données pour générer le graphique.
+              </div>
+            )}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
