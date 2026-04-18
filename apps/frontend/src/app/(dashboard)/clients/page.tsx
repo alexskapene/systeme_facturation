@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,22 +28,48 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { FieldGroup, Field, FieldLabel } from '@/components/ui/field';
-import { Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import { clients as initialClients, type Client } from '@/types/clients';
+import { Plus, Search, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { type Client, ClientType } from '@/types/clients';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import {
+  fetchClients,
+  createClient,
+  updateClient,
+  toggleClientStatus,
+} from '@/store/slices/clientSlice';
 
 export default function ClientsPage() {
-  const [clients, setClients] = useState(initialClients);
+  const dispatch = useAppDispatch();
+  const { clients, isLoading, error } = useAppSelector(
+    (state) => state.clients,
+  );
+
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    clientType: ClientType.PERSONNE_PHYSIQUE,
+    nif: '',
+    rccm: '',
+  });
+
   const itemsPerPage = 10;
+
+  useEffect(() => {
+    dispatch(fetchClients());
+  }, [dispatch]);
 
   const filteredClients = clients.filter(
     (client) =>
       client.name.toLowerCase().includes(search.toLowerCase()) ||
-      client.phone.includes(search),
+      client.phone.includes(search) ||
+      client.email.toLowerCase().includes(search.toLowerCase()),
   );
 
   const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
@@ -59,46 +85,38 @@ export default function ClientsPage() {
         name: client.name,
         email: client.email,
         phone: client.phone,
+        address: client.address || '',
+        clientType: client.clientType,
+        nif: client.nif || '',
+        rccm: client.rccm || '',
       });
     } else {
       setEditingClient(null);
-      setFormData({ name: '', email: '', phone: '' });
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        address: '',
+        clientType: ClientType.PERSONNE_PHYSIQUE,
+        nif: '',
+        rccm: '',
+      });
     }
     setIsDialogOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingClient) {
-      setClients(
-        clients.map((c) =>
-          c.id === editingClient.id ? { ...c, ...formData } : c,
-        ),
-      );
+      await dispatch(updateClient({ id: editingClient._id, data: formData }));
     } else {
-      const newClient: Client = {
-        id: String(Date.now()),
-        ...formData,
-        createdAt: new Date().toLocaleDateString('fr-FR', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-        }),
-      };
-      setClients([...clients, newClient]);
+      await dispatch(createClient(formData));
     }
     setIsDialogOpen(false);
-    setFormData({ name: '', email: '', phone: '' });
   };
 
-  //   const handleDelete = (id: string) => {
-  //     setClients(clients.filter((c) => c.id !== id));
-  //   };
-
   const handleToggleActive = (id: string) => {
-    setClients(
-      clients.map((p) => (p.id === id ? { ...p, active: !p.active } : p)),
-    );
+    dispatch(toggleClientStatus(id));
   };
 
   return (
@@ -113,7 +131,7 @@ export default function ClientsPage() {
               Nouveau Client
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>
                 {editingClient
@@ -122,9 +140,33 @@ export default function ClientsPage() {
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit}>
-              <FieldGroup>
+              <FieldGroup className="space-y-4">
                 <Field>
-                  <FieldLabel htmlFor="name">Nom</FieldLabel>
+                  <FieldLabel htmlFor="clientType">Type de Client</FieldLabel>
+                  <Select
+                    value={formData.clientType}
+                    onValueChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        clientType: value as ClientType,
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez le type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={ClientType.PERSONNE_PHYSIQUE}>
+                        Personne Physique
+                      </SelectItem>
+                      <SelectItem value={ClientType.PERSONNE_MORALE}>
+                        Personne Morale
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="name">Nom / Raison Sociale</FieldLabel>
                   <Input
                     id="name"
                     value={formData.name}
@@ -135,32 +177,75 @@ export default function ClientsPage() {
                     required
                   />
                 </Field>
+                <div className="grid grid-cols-2 gap-4">
+                  <Field>
+                    <FieldLabel htmlFor="email">Email</FieldLabel>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                      placeholder="email@exemple.com"
+                      required
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="phone">Téléphone</FieldLabel>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
+                      placeholder="+243..."
+                      required
+                    />
+                  </Field>
+                </div>
                 <Field>
-                  <FieldLabel htmlFor="email">Email</FieldLabel>
+                  <FieldLabel htmlFor="address">Adresse</FieldLabel>
                   <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
+                    id="address"
+                    value={formData.address}
                     onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
+                      setFormData({ ...formData, address: e.target.value })
                     }
-                    placeholder="email@exemple.com"
+                    placeholder="Gombe, Kinshasa"
                     required
                   />
                 </Field>
-                <Field>
-                  <FieldLabel htmlFor="phone">Telephone</FieldLabel>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
-                    }
-                    placeholder="123-456-789"
-                    required
-                  />
-                </Field>
-                <Button type="submit" className="w-full">
+                {formData.clientType === ClientType.PERSONNE_MORALE && (
+                  <div className="grid grid-cols-2 gap-4 border-t pt-4">
+                    <Field>
+                      <FieldLabel htmlFor="nif">NIF</FieldLabel>
+                      <Input
+                        id="nif"
+                        value={formData.nif}
+                        onChange={(e) =>
+                          setFormData({ ...formData, nif: e.target.value })
+                        }
+                        placeholder="NIF"
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="rccm">RCCM</FieldLabel>
+                      <Input
+                        id="rccm"
+                        value={formData.rccm}
+                        onChange={(e) =>
+                          setFormData({ ...formData, rccm: e.target.value })
+                        }
+                        placeholder="RCCM"
+                      />
+                    </Field>
+                  </div>
+                )}
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   {editingClient ? 'Modifier' : 'Ajouter'}
                 </Button>
               </FieldGroup>
@@ -176,23 +261,23 @@ export default function ClientsPage() {
             <div className="relative max-w-sm flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Recherche des clients ..."
+                placeholder="Recherche par nom, email ou tel..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
               />
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="secondary" size="sm">
-                Tous
-              </Button>
+              {isLoading && (
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              )}
               <Select defaultValue="all">
                 <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Filtrers" />
+                  <SelectValue placeholder="Filtrer" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tous</SelectItem>
-                  <SelectItem value="recent">Recents</SelectItem>
+                  <SelectItem value="recent">Récents</SelectItem>
                   <SelectItem value="oldest">Anciens</SelectItem>
                 </SelectContent>
               </Select>
@@ -201,6 +286,13 @@ export default function ClientsPage() {
         </CardContent>
       </Card>
 
+      {/* Error Message */}
+      {error && (
+        <div className="bg-destructive/15 text-destructive p-3 rounded-md text-sm">
+          {error}
+        </div>
+      )}
+
       {/* Table */}
       <Card>
         <CardContent className="p-0">
@@ -208,36 +300,70 @@ export default function ClientsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Client</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Telephone</TableHead>
-                <TableHead>Date d&apos;inscript</TableHead>
+                <TableHead>Téléphone</TableHead>
                 <TableHead>Statut</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedClients.map((client) => (
-                <TableRow key={client.id}>
-                  <TableCell className="font-medium">{client.name}</TableCell>
-                  <TableCell>{client.email}</TableCell>
-                  <TableCell>{client.phone}</TableCell>
-                  <TableCell>{client.createdAt}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Switch
-                        checked={client.active}
-                        onCheckedChange={() => handleToggleActive(client.id)}
-                      />
-                      <span
-                        className={`text-sm font-medium ${
-                          client.active ? 'text-green-600' : 'text-gray-400'
-                        }`}
-                      >
-                        {client.active ? 'Actif' : 'Inactif'}
+              {paginatedClients.length > 0 ? (
+                paginatedClients.map((client) => (
+                  <TableRow key={client._id}>
+                    <TableCell className="font-medium">
+                      <div>
+                        <div className="font-bold">{client.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {client.address}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-xs bg-secondary px-2 py-1 rounded-full">
+                        {client.clientType === ClientType.PERSONNE_PHYSIQUE
+                          ? 'Physique'
+                          : 'Morale'}
                       </span>
-                    </div>
+                    </TableCell>
+                    <TableCell>{client.email}</TableCell>
+                    <TableCell>{client.phone}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Switch
+                          checked={client.active}
+                          onCheckedChange={() => handleToggleActive(client._id)}
+                        />
+                        <span
+                          className={`text-sm font-medium ${
+                            client.active ? 'text-green-600' : 'text-gray-400'
+                          }`}
+                        >
+                          {client.active ? 'Actif' : 'Inactif'}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenDialog(client)}
+                      >
+                        Modifier
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    className="text-center py-10 text-muted-foreground"
+                  >
+                    {isLoading ? 'Chargement...' : 'Aucun client trouvé'}
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
 
@@ -254,25 +380,15 @@ export default function ClientsPage() {
                 disabled={currentPage === 1}
               >
                 <ChevronLeft className="mr-1 h-4 w-4" />
-                Prec.
+                Préc.
               </Button>
-              <Select value={String(itemsPerPage)}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10 lignes par page</SelectItem>
-                  <SelectItem value="20">20 lignes par page</SelectItem>
-                  <SelectItem value="50">50 lignes par page</SelectItem>
-                </SelectContent>
-              </Select>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() =>
                   setCurrentPage(Math.min(totalPages, currentPage + 1))
                 }
-                disabled={currentPage >= totalPages}
+                disabled={currentPage >= totalPages || totalPages === 0}
               >
                 Suiv.
                 <ChevronRight className="ml-1 h-4 w-4" />

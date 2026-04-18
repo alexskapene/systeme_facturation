@@ -1,41 +1,37 @@
-import { Types } from 'mongoose';
 export enum ClientType {
   PERSONNE_PHYSIQUE = 'PERSONNE_PHYSIQUE',
   PERSONNE_MORALE = 'PERSONNE_MORALE',
 }
 
 export interface Client {
-  id: string;
-  name: string; // Nom ou Raison Sociale
-  email?: string;
-  phone: string;
-  address?: string;
-  active: boolean;
-  createdAt: string;
-}
-
-export interface IpClient {
+  _id: string;
   name: string; // Nom ou Raison Sociale
   clientType: ClientType;
-  nif?: string; // Obligatoire pour les entreprises
+  nif?: string;
   rccm?: string;
-  email?: string;
+  email: string;
   phone: string;
-  address?: string;
-  createdBy: Types.ObjectId;
+  address: string;
   active: boolean;
   createdAt: string;
-  updatedAt: Date;
+  updatedAt: string;
 }
 
-export const clients: Client[] = [
-  {
-    id: '1',
-    name: 'Jean Dupont',
-    email: 'jean.dupont@email.com',
-    phone: '653-676-803',
-    address: '122 avenue de la mission',
-    active: true,
-    createdAt: '11/04/2022',
-  },
-];
+export interface CreateClientDTO {
+  name: string;
+  clientType: ClientType;
+  nif?: string;
+  rccm?: string;
+  email: string;
+  phone: string;
+  address: string;
+}
+
+export type UpdateClientDTO = Partial<CreateClientDTO>;
+
+export interface ClientState {
+  clients: Client[];
+  currentClient: Client | null;
+  isLoading: boolean;
+  error: string | null;
+}

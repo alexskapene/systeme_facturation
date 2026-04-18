@@ -9,6 +9,7 @@ import stockRoutes from './stock.routes';
 import paymentRoutes from './payment.routes';
 import clientRoutes from './client.route';
 import invoiceRoutes from './invoice.routes';
+import dashboardRoutes from './dashboard.routes';
 
 const router = Router();
 
@@ -34,5 +35,6 @@ router.use('/stocks', stockRoutes); // alias plural pour compatibilité
 router.use('/payments', paymentRoutes);
 router.use('/clients', clientRoutes);
 router.use('/invoices', invoiceRoutes);
+router.use('/dashboard', dashboardRoutes);
 
 export default router;

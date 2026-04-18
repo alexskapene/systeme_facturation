@@ -1,23 +1,34 @@
 export interface Product {
-  id: string;
+  _id: string;
   name: string;
   description?: string;
   priceHT: number;
   tvaRate: number;
   priceTTC: number;
   stockQuantity: number;
+  minStockQuantity: number;
+  supplier: string | { _id: string; name: string }; // ID or populated object
+  createdBy: string | { _id: string; name: string };
   active: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export const products: Product[] = [
-  {
-    id: '1',
-    name: 'Produit A',
-    description: 'Produit exemple',
-    priceHT: 50,
-    tvaRate: 16,
-    priceTTC: 58,
-    stockQuantity: 150,
-    active: true,
-  },
-];
+export interface CreateProductDTO {
+  name: string;
+  description?: string;
+  priceHT: number;
+  tvaRate?: number;
+  stockQuantity?: number;
+  minStockQuantity?: number;
+  supplier: string;
+}
+
+export type UpdateProductDTO = Partial<CreateProductDTO>;
+
+export interface ProductState {
+  products: Product[];
+  currentProduct: Product | null;
+  isLoading: boolean;
+  error: string | null;
+}

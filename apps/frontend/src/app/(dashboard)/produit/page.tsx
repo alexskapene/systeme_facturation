@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,23 +28,51 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { FieldGroup, Field, FieldLabel } from '@/components/ui/field';
-import { Plus, ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
-import { products as initialProducts, type Product } from '@/types/produit';
+import {
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  Pencil,
+  Loader2,
+  Package,
+} from 'lucide-react';
+import { type Product, type CreateProductDTO } from '@/types/produit';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import {
+  fetchProducts,
+  createProduct,
+  updateProduct,
+  toggleProductStatus,
+} from '@/store/slices/productSlice';
+import { fetchSuppliers } from '@/store/slices/supplierSlice';
 
 export default function ProduitsPage() {
-  const [products, setProducts] = useState(initialProducts);
+  const dispatch = useAppDispatch();
+  const { products, isLoading, error } = useAppSelector(
+    (state) => state.products,
+  );
+  const { suppliers } = useAppSelector((state) => state.suppliers);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
+    description: '',
     priceHT: '',
     tvaRate: '16',
-    stockQuantity: '',
+    stockQuantity: '0',
+    minStockQuantity: '0',
+    supplier: '',
   });
 
   const itemsPerPage = 10;
+
+  useEffect(() => {
+    dispatch(fetchProducts());
+    dispatch(fetchSuppliers());
+  }, [dispatch]);
 
   const totalPages = Math.ceil(products.length / itemsPerPage);
   const paginatedProducts = products.slice(
@@ -57,154 +85,196 @@ export default function ProduitsPage() {
       setEditingProduct(product);
       setFormData({
         name: product.name,
+        description: product.description || '',
         priceHT: String(product.priceHT),
         tvaRate: String(product.tvaRate),
         stockQuantity: String(product.stockQuantity),
+        minStockQuantity: String(product.minStockQuantity),
+        supplier:
+          typeof product.supplier === 'string'
+            ? product.supplier
+            : product.supplier._id || '',
       });
     } else {
       setEditingProduct(null);
       setFormData({
         name: '',
+        description: '',
         priceHT: '',
         tvaRate: '16',
-        stockQuantity: '',
+        stockQuantity: '0',
+        minStockQuantity: '0',
+        supplier: suppliers.length > 0 ? suppliers[0]._id : '',
       });
     }
     setIsDialogOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const priceHT = parseFloat(formData.priceHT);
-    const tvaRate = parseFloat(formData.tvaRate);
-    const stockQuantity = parseInt(formData.stockQuantity);
-
-    const priceTTC = priceHT + (priceHT * tvaRate) / 100;
+    const data: CreateProductDTO = {
+      name: formData.name,
+      description: formData.description,
+      supplier: formData.supplier,
+      priceHT: parseFloat(formData.priceHT),
+      tvaRate: parseFloat(formData.tvaRate),
+      stockQuantity: parseInt(formData.stockQuantity),
+      minStockQuantity: parseInt(formData.minStockQuantity),
+    };
 
     if (editingProduct) {
-      setProducts(
-        products.map((p) =>
-          p.id === editingProduct.id
-            ? {
-                ...p,
-                name: formData.name,
-                priceHT,
-                tvaRate,
-                priceTTC,
-                stockQuantity,
-              }
-            : p,
-        ),
-      );
+      await dispatch(updateProduct({ id: editingProduct._id, data }));
     } else {
-      const newProduct: Product = {
-        id: String(Date.now()),
-        name: formData.name,
-        description: '',
-        priceHT,
-        tvaRate,
-        priceTTC,
-        stockQuantity,
-        active: true,
-      };
-
-      setProducts([...products, newProduct]);
+      await dispatch(createProduct(data));
     }
 
     setIsDialogOpen(false);
-    setFormData({
-      name: '',
-      priceHT: '',
-      tvaRate: '16',
-      stockQuantity: '',
-    });
   };
 
-  // const handleDelete = (id: string) => {
-  //   setProducts(products.filter((p) => p.id !== id))
-  // }
-
   const handleToggleActive = (id: string) => {
-    setProducts(
-      products.map((p) => (p.id === id ? { ...p, active: !p.active } : p)),
-    );
+    dispatch(toggleProductStatus(id));
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold">Produits</h1>
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <Package className="h-6 w-6 text-primary" />
+          Catalogue Produits
+        </h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => handleOpenDialog()}>
+            <Button
+              onClick={() => handleOpenDialog()}
+              className="shadow-md hover:shadow-lg transition-all"
+            >
               <Plus className="mr-2 h-4 w-4" />
-              Ajouter Produit
+              Nouveau Produit
             </Button>
           </DialogTrigger>
 
-          <DialogContent>
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>
-                {editingProduct ? 'Modifier le produit' : 'Ajouter un produit'}
+                {editingProduct
+                  ? 'Modifier le produit'
+                  : 'Ajouter un nouveau produit'}
               </DialogTitle>
             </DialogHeader>
 
             <form onSubmit={handleSubmit}>
-              <FieldGroup>
+              <FieldGroup className="space-y-4">
                 <Field>
-                  <FieldLabel>Nom</FieldLabel>
+                  <FieldLabel>Nom du produit</FieldLabel>
                   <Input
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
+                    placeholder="Ex: Sac de Ciment"
                     required
                   />
                 </Field>
 
                 <Field>
-                  <FieldLabel>Prix HT ($)</FieldLabel>
+                  <FieldLabel>Description</FieldLabel>
                   <Input
-                    type="number"
-                    value={formData.priceHT}
+                    value={formData.description}
                     onChange={(e) =>
-                      setFormData({ ...formData, priceHT: e.target.value })
+                      setFormData({ ...formData, description: e.target.value })
                     }
-                    required
+                    placeholder="Description du produit..."
                   />
                 </Field>
 
                 <Field>
-                  <FieldLabel>TVA (%)</FieldLabel>
-                  <Input
-                    type="number"
-                    value={formData.tvaRate}
-                    onChange={(e) =>
-                      setFormData({ ...formData, tvaRate: e.target.value })
+                  <FieldLabel>Fournisseur</FieldLabel>
+                  <Select
+                    value={formData.supplier}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, supplier: value })
                     }
-                    required
-                  />
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choisir un fournisseur" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {suppliers.map((s) => (
+                        <SelectItem key={s._id} value={s._id}>
+                          {s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
 
-                <Field>
-                  <FieldLabel>Stock</FieldLabel>
-                  <Input
-                    type="number"
-                    value={formData.stockQuantity}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        stockQuantity: e.target.value,
-                      })
-                    }
-                    required
-                  />
-                </Field>
+                <div className="grid grid-cols-2 gap-4">
+                  <Field>
+                    <FieldLabel>Prix HT ($)</FieldLabel>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={formData.priceHT}
+                      onChange={(e) =>
+                        setFormData({ ...formData, priceHT: e.target.value })
+                      }
+                      required
+                    />
+                  </Field>
 
-                <Button type="submit" className="w-full">
-                  {editingProduct ? 'Modifier' : 'Ajouter'}
+                  <Field>
+                    <FieldLabel>TVA (%)</FieldLabel>
+                    <Input
+                      type="number"
+                      value={formData.tvaRate}
+                      onChange={(e) =>
+                        setFormData({ ...formData, tvaRate: e.target.value })
+                      }
+                      required
+                    />
+                  </Field>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Field>
+                    <FieldLabel>Stock Initial</FieldLabel>
+                    <Input
+                      type="number"
+                      value={formData.stockQuantity}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          stockQuantity: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Stock Min Alert</FieldLabel>
+                    <Input
+                      type="number"
+                      value={formData.minStockQuantity}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          minStockQuantity: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </Field>
+                </div>
+
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {editingProduct
+                    ? 'Enregistrer les modifications'
+                    : 'Ajouter au catalogue'}
                 </Button>
               </FieldGroup>
             </form>
@@ -212,74 +282,129 @@ export default function ProduitsPage() {
         </Dialog>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="bg-destructive/15 text-destructive p-3 rounded-md text-sm border border-destructive/20">
+          {error}
+        </div>
+      )}
+
       {/* Table */}
-      <Card>
+      <Card className="border-none shadow-sm overflow-hidden">
         <CardContent className="p-0">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-muted/50">
               <TableRow>
-                <TableHead>Produit</TableHead>
-                <TableHead>Prix HT</TableHead>
-                <TableHead>TVA</TableHead>
-                <TableHead>Prix TTC</TableHead>
-                <TableHead>Stock</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="font-bold text-foreground">
+                  Produit
+                </TableHead>
+                <TableHead className="font-bold text-foreground">
+                  Prix HT
+                </TableHead>
+                <TableHead className="font-bold text-foreground text-center">
+                  TVA
+                </TableHead>
+                <TableHead className="font-bold text-foreground">
+                  Prix TTC
+                </TableHead>
+                <TableHead className="font-bold text-foreground text-center">
+                  Stock
+                </TableHead>
+                <TableHead className="font-bold text-foreground">
+                  Statut
+                </TableHead>
+                <TableHead className="text-right font-bold text-foreground">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody>
-              {paginatedProducts.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell className="font-medium">{product.name}</TableCell>
+              {paginatedProducts.length > 0 ? (
+                paginatedProducts.map((product) => (
+                  <TableRow
+                    key={product._id}
+                    className="hover:bg-muted/30 transition-colors"
+                  >
+                    <TableCell className="font-medium">
+                      <div>
+                        <div className="font-bold">{product.name}</div>
+                        <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                          {product.description || 'Pas de description'}
+                        </div>
+                      </div>
+                    </TableCell>
 
-                  <TableCell>{product.priceHT.toFixed(2)}</TableCell>
-                  <TableCell>{product.tvaRate}%</TableCell>
-                  <TableCell>{product.priceTTC.toFixed(2)}</TableCell>
-                  <TableCell>{product.stockQuantity}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Switch
-                        checked={product.active}
-                        onCheckedChange={() => handleToggleActive(product.id)}
-                      />
-                      <span
-                        className={`text-sm font-medium ${
-                          product.active ? 'text-green-600' : 'text-gray-400'
-                        }`}
-                      >
-                        {product.active ? 'Actif' : 'Inactif'}
+                    <TableCell>${product.priceHT.toFixed(2)}</TableCell>
+                    <TableCell className="text-center">
+                      <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold">
+                        {product.tvaRate}%
                       </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    </TableCell>
+                    <TableCell className="font-bold text-primary">
+                      ${product.priceTTC.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <span
+                        className={`font-bold ${product.stockQuantity <= product.minStockQuantity ? 'text-destructive' : ''}`}
+                      >
+                        {product.stockQuantity}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Switch
+                          checked={product.active}
+                          onCheckedChange={() =>
+                            handleToggleActive(product._id)
+                          }
+                        />
+                        <span
+                          className={`text-sm font-medium ${
+                            product.active ? 'text-green-600' : 'text-gray-400'
+                          }`}
+                        >
+                          {product.active ? 'Actif' : 'Inactif'}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleOpenDialog(product)}
+                        className="hover:text-primary transition-colors"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
-
-                      {/* <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(product.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button> */}
-                    </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="text-center py-20 text-muted-foreground"
+                  >
+                    {isLoading ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <span>Chargement du catalogue...</span>
+                      </div>
+                    ) : (
+                      'Aucun produit trouvé dans le catalogue'
+                    )}
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between border-t px-4 py-3">
-            <p className="text-sm">
-              Page {currentPage} sur {totalPages || 1}
+          <div className="flex items-center justify-between border-t px-4 py-3 bg-muted/20">
+            <p className="text-sm text-muted-foreground">
+              Affichage de {paginatedProducts.length} sur {products.length}{' '}
+              produits
             </p>
 
             <div className="flex items-center gap-2">
@@ -290,24 +415,17 @@ export default function ProduitsPage() {
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               >
                 <ChevronLeft className="mr-1 h-4 w-4" />
-                Prec.
+                Préc.
               </Button>
 
-              <Select value={String(itemsPerPage)}>
-                <SelectTrigger className="w-36">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10 lignes</SelectItem>
-                  <SelectItem value="20">20 lignes</SelectItem>
-                  <SelectItem value="50">50 lignes</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="text-sm font-medium">
+                {currentPage} / {totalPages || 1}
+              </div>
 
               <Button
                 size="sm"
                 variant="outline"
-                disabled={currentPage >= totalPages}
+                disabled={currentPage >= totalPages || totalPages === 0}
                 onClick={() =>
                   setCurrentPage(Math.min(totalPages, currentPage + 1))
                 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,25 +27,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Search } from 'lucide-react';
-
-type Supplier = {
-  id: string;
-  name: string;
-  email?: string;
-  phone: string;
-  nif?: string;
-  rccm?: string;
-  address?: string;
-  createdBy?: string;
-  active?: boolean;
-  createdAt: string;
-};
-
-const initialSuppliers: Supplier[] = [];
+import { Plus, Search, Loader2 } from 'lucide-react';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import {
+  fetchSuppliers,
+  createSupplier,
+  updateSupplier,
+} from '@/store/slices/supplierSlice';
+import { type Supplier } from '@/types/suppliers';
 
 export default function FournisseursPage() {
-  const [suppliers, setSuppliers] = useState<Supplier[]>(initialSuppliers);
+  const dispatch = useAppDispatch();
+  const { suppliers, isLoading, error } = useAppSelector(
+    (state) => state.suppliers,
+  );
+
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
@@ -58,14 +54,18 @@ export default function FournisseursPage() {
     address: '',
   });
 
+  useEffect(() => {
+    dispatch(fetchSuppliers());
+  }, [dispatch]);
+
   const filteredSuppliers = suppliers.filter((supplier) =>
     [
       supplier.name,
-      supplier.email ?? '',
+      supplier.email,
       supplier.phone,
-      supplier.nif ?? '',
+      supplier.nif,
       supplier.rccm ?? '',
-      supplier.address ?? '',
+      supplier.address,
     ]
       .join(' ')
       .toLowerCase()
@@ -77,11 +77,11 @@ export default function FournisseursPage() {
       setEditingSupplier(supplier);
       setFormData({
         name: supplier.name,
-        email: supplier.email ?? '',
+        email: supplier.email,
         phone: supplier.phone,
-        nif: supplier.nif ?? '',
+        nif: supplier.nif,
         rccm: supplier.rccm ?? '',
-        address: supplier.address ?? '',
+        address: supplier.address,
       });
     } else {
       setEditingSupplier(null);
@@ -97,37 +97,16 @@ export default function FournisseursPage() {
     setIsDialogOpen(true);
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (editingSupplier) {
-      setSuppliers(
-        suppliers.map((supplier) =>
-          supplier.id === editingSupplier.id
-            ? { ...supplier, ...formData }
-            : supplier,
-        ),
+      await dispatch(
+        updateSupplier({ id: editingSupplier._id, data: formData }),
       );
     } else {
-      const newSupplier: Supplier = {
-        id: String(Date.now()),
-        ...formData,
-        createdAt: new Date().toLocaleDateString('fr-FR', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-        }),
-      };
-      setSuppliers([...suppliers, newSupplier]);
+      await dispatch(createSupplier(formData));
     }
     setIsDialogOpen(false);
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      nif: '',
-      rccm: '',
-      address: '',
-    });
   };
 
   return (
@@ -178,6 +157,7 @@ export default function FournisseursPage() {
                         setFormData({ ...formData, email: e.target.value })
                       }
                       placeholder="email@exemple.com"
+                      required
                     />
                   </div>
                   <div className="space-y-2">
@@ -188,7 +168,7 @@ export default function FournisseursPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, phone: e.target.value })
                       }
-                      placeholder="123-456-789"
+                      placeholder="+243..."
                       required
                     />
                   </div>
@@ -200,7 +180,8 @@ export default function FournisseursPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, nif: e.target.value })
                       }
-                      placeholder="NIF du fournisseur"
+                      placeholder="NIF (ex: A1234567B)"
+                      required
                     />
                   </div>
                   <div className="space-y-2">
@@ -211,7 +192,7 @@ export default function FournisseursPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, rccm: e.target.value })
                       }
-                      placeholder="RCCM du fournisseur"
+                      placeholder="RCCM"
                     />
                   </div>
                   <div className="space-y-2">
@@ -222,11 +203,15 @@ export default function FournisseursPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, address: e.target.value })
                       }
-                      placeholder="Adresse du fournisseur"
+                      placeholder="Adresse complète"
+                      required
                     />
                   </div>
                 </div>
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   {editingSupplier ? 'Modifier' : 'Ajouter'}
                 </Button>
               </div>
@@ -242,16 +227,16 @@ export default function FournisseursPage() {
             <div className="relative max-w-sm flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Recherche des fournisseurs ..."
+                placeholder="Recherche par nom, nif, email..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
               />
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="secondary" size="sm">
-                Tous
-              </Button>
+              {isLoading && (
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              )}
               <Select defaultValue="all">
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Filtrer" />
@@ -266,6 +251,13 @@ export default function FournisseursPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-destructive/15 text-destructive p-3 rounded-md text-sm">
+          {error}
+        </div>
+      )}
 
       <Card>
         <CardContent className="p-4 pb-0">
@@ -294,22 +286,30 @@ export default function FournisseursPage() {
                 <TableHead>NIF</TableHead>
                 <TableHead>RCCM</TableHead>
                 <TableHead>Adresse</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredSuppliers.length > 0 ? (
                 filteredSuppliers.map((supplier) => (
-                  <TableRow key={supplier.id}>
+                  <TableRow key={supplier._id}>
                     <TableCell className="font-medium">
                       {supplier.name}
                     </TableCell>
-                    <TableCell>{supplier.email ?? '-'}</TableCell>
+                    <TableCell>{supplier.email}</TableCell>
                     <TableCell>{supplier.phone}</TableCell>
-                    <TableCell>{supplier.nif ?? '-'}</TableCell>
+                    <TableCell>{supplier.nif}</TableCell>
                     <TableCell>{supplier.rccm ?? '-'}</TableCell>
-                    <TableCell>{supplier.address ?? '-'}</TableCell>
-                    <TableCell>{supplier.createdAt}</TableCell>
+                    <TableCell>{supplier.address}</TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenDialog(supplier)}
+                      >
+                        Modifier
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
@@ -318,7 +318,7 @@ export default function FournisseursPage() {
                     colSpan={7}
                     className="h-24 text-center text-sm text-muted-foreground"
                   >
-                    Aucun fournisseur trouvé.
+                    {isLoading ? 'Chargement...' : 'Aucun fournisseur trouvé.'}
                   </TableCell>
                 </TableRow>
               )}
