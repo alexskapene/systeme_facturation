@@ -7,83 +7,63 @@ export enum Role {
 }
 
 export interface User {
-  id: string;
+  _id: string;
   name: string;
   firstName: string;
   email: string;
   role: Role;
   actif: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export const users: User[] = [
-  {
-    id: '1',
-    name: 'Doe',
-    firstName: 'John',
-    email: 'john.doe@example.com',
-    role: Role.SUPER_ADMIN,
-    actif: true,
-  },
-  {
-    id: '2',
-    name: 'Martin',
-    firstName: 'Marie',
-    email: 'marie.martin@example.com',
-    role: Role.ADMIN,
-    actif: true,
-  },
-  {
-    id: '3',
-    name: 'Dupont',
-    firstName: 'Pierre',
-    email: 'pierre.dupont@example.com',
-    role: Role.COMPTABLE,
-    actif: true,
-  },
-  {
-    id: '4',
-    name: 'Bernard',
-    firstName: 'Sophie',
-    email: 'sophie.bernard@example.com',
-    role: Role.GESTIONNAIRE,
-    actif: false,
-  },
-  {
-    id: '5',
-    name: 'Lefevre',
-    firstName: 'Lucas',
-    email: 'lucas.lefevre@example.com',
-    role: Role.AGENT_VENTE,
-    actif: true,
-  },
-];
+export interface CreateUserDTO {
+  name: string;
+  firstName: string;
+  email: string;
+  password?: string;
+  role: Role;
+}
+
+export type UpdateUserDTO = Partial<CreateUserDTO>;
+
+export interface UserState {
+  users: User[];
+  currentUser: User | null;
+  isLoading: boolean;
+  error: string | null;
+}
 
 export function getRoleLabel(role: Role): string {
   switch (role) {
     case Role.SUPER_ADMIN:
       return 'Super Admin';
     case Role.ADMIN:
-      return 'Admin';
+      return 'Administrateur';
     case Role.COMPTABLE:
       return 'Comptable';
     case Role.GESTIONNAIRE:
       return 'Gestionnaire';
     case Role.AGENT_VENTE:
-      return 'Agent de Vente';
+      return 'Agent de vente';
+    default:
+      return role;
   }
 }
 
 export function getRoleColor(role: Role): string {
   switch (role) {
     case Role.SUPER_ADMIN:
-      return 'bg-purple-500 text-white';
+      return 'bg-purple-100 text-purple-700 border-purple-200';
     case Role.ADMIN:
-      return 'bg-blue-500 text-white';
+      return 'bg-red-100 text-red-700 border-red-200';
     case Role.COMPTABLE:
-      return 'bg-green-500 text-white';
+      return 'bg-blue-100 text-blue-700 border-blue-200';
     case Role.GESTIONNAIRE:
-      return 'bg-orange-500 text-white';
+      return 'bg-green-100 text-green-700 border-green-200';
     case Role.AGENT_VENTE:
-      return 'bg-cyan-500 text-white';
+      return 'bg-orange-100 text-orange-700 border-orange-200';
+    default:
+      return 'bg-gray-100 text-gray-700 border-gray-200';
   }
 }
