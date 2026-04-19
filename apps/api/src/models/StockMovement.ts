@@ -26,6 +26,10 @@ const StockMovementSchema = new Schema(
       ref: 'User',
       required: true,
     },
+    supplier: {
+      type: Schema.Types.ObjectId,
+      ref: 'Supplier',
+    },
     reference: {
       type: String,
     },

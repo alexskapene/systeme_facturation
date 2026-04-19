@@ -15,6 +15,7 @@ export interface IStockMovement extends Document {
   quantity: number;
   reason: string;
   performedBy: Types.ObjectId;
+  supplier?: Types.ObjectId; // Si approvisionnement
   reference?: string; // N° de bon de livraison ou facture
   previousStock: number;
   newStock: number;
