@@ -36,7 +36,7 @@ export default function ProfilePage() {
 
       <div className="relative px-6 -mt-24">
         <div className="flex flex-col md:flex-row gap-6 items-end">
-          <div className="relative group">
+          <div className="relative group rounded-full overflow-hidden">
             <Avatar className="h-36 w-36 rounded-3xl border-4 border-white shadow-xl overflow-hidden bg-slate-100">
               <AvatarFallback className="text-4xl font-black bg-slate-100 text-primary">
                 {user.firstName[0]}

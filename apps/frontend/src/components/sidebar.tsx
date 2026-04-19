@@ -29,17 +29,71 @@ import {
   UsersRound,
 } from 'lucide-react';
 
+import { useAppSelector } from '@/hooks/redux';
+import { Role } from '@/types/user';
+
 const navItems = [
-  { href: '/', label: 'Dashboard', icon: Home },
-  { href: '/clients', label: 'Clients', icon: Users },
-  { href: '/fournisseur', label: 'Fournisseurs', icon: IdCardLanyard },
-  { href: '/produit', label: 'Produits', icon: Package },
-  { href: '/factures', label: 'Factures', icon: FileText },
-  { href: '/payements', label: 'Payements', icon: ArrowLeftRight },
-  { href: '/stock', label: 'Stock', icon: CirclePile },
-  { href: '/users', label: 'Utilisateurs', icon: UsersRound },
-  { href: '/rapports', label: 'Rapport', icon: BarChart3 },
-  { href: '/parametres', label: 'Parametres', icon: Settings },
+  { href: '/', label: 'Dashboard', icon: Home, roles: Object.values(Role) },
+  {
+    href: '/clients',
+    label: 'Clients',
+    icon: Users,
+    roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.COMPTABLE, Role.AGENT_VENTE],
+  },
+  {
+    href: '/fournisseur',
+    label: 'Fournisseurs',
+    icon: IdCardLanyard,
+    roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.COMPTABLE, Role.GESTIONNAIRE],
+  },
+  {
+    href: '/produit',
+    label: 'Produits',
+    icon: Package,
+    roles: [
+      Role.SUPER_ADMIN,
+      Role.ADMIN,
+      Role.COMPTABLE,
+      Role.GESTIONNAIRE,
+      Role.AGENT_VENTE,
+    ],
+  },
+  {
+    href: '/factures',
+    label: 'Factures',
+    icon: FileText,
+    roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.COMPTABLE, Role.AGENT_VENTE],
+  },
+  {
+    href: '/payements',
+    label: 'Payements',
+    icon: ArrowLeftRight,
+    roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.COMPTABLE],
+  },
+  {
+    href: '/stock',
+    label: 'Stock',
+    icon: CirclePile,
+    roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.GESTIONNAIRE],
+  },
+  {
+    href: '/users',
+    label: 'Utilisateurs',
+    icon: UsersRound,
+    roles: [Role.SUPER_ADMIN, Role.ADMIN],
+  },
+  {
+    href: '/rapports',
+    label: 'Rapport',
+    icon: BarChart3,
+    roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.COMPTABLE],
+  },
+  {
+    href: '/parametres',
+    label: 'Parametres',
+    icon: Settings,
+    roles: [Role.SUPER_ADMIN, Role.ADMIN],
+  },
 ];
 
 interface SidebarProps {
@@ -49,8 +103,15 @@ interface SidebarProps {
 export default function Sidebar({ isExpanded }: SidebarProps) {
   const pathname = usePathname();
   const logout = useLogout();
+  const { user } = useAppSelector((state) => state.auth);
 
   const [openLogout, setOpenLogout] = React.useState(false);
+
+  // Filtrer les items en fonction du rôle de l'utilisateur
+  const filteredNavItems = navItems.filter((item) => {
+    if (!user) return false;
+    return item.roles.includes(user.role as Role);
+  });
 
   return (
     <>
@@ -74,7 +135,7 @@ export default function Sidebar({ isExpanded }: SidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 space-y-4 px-3 py-4">
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const isActive = pathname === item.href;
 
             return (
