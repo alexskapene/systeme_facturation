@@ -52,6 +52,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { fetchInvoices, createInvoice } from '@/store/slices/invoiceSlice';
 import { fetchClients } from '@/store/slices/clientSlice';
 import { fetchProducts } from '@/store/slices/productSlice';
+import { ProductCategory } from '@/types/produit';
 
 type FilterStatus = 'all' | InvoiceStatus;
 
@@ -121,6 +122,18 @@ export default function FacturesPage() {
     const product = products.find((p) => p._id === newItem.productId);
     if (!product) return;
 
+    const requestedQty = parseInt(newItem.quantity);
+
+    // Vérification du stock uniquement pour les ARTICLES
+    if (product.category === ProductCategory.ARTICLE) {
+      if (product.stockQuantity < requestedQty) {
+        alert(
+          `Stock insuffisant pour ${product.name} (Disponible: ${product.stockQuantity})`,
+        );
+        return;
+      }
+    }
+
     setFormData((prev) => ({
       ...prev,
       items: [
@@ -128,7 +141,7 @@ export default function FacturesPage() {
         {
           product: product._id,
           name: product.name,
-          quantity: parseInt(newItem.quantity),
+          quantity: requestedQty,
           priceHT: product.priceHT,
           tvaRate: product.tvaRate,
         },
@@ -372,9 +385,25 @@ export default function FacturesPage() {
                         <SelectValue placeholder="Choisir un produit" />
                       </SelectTrigger>
                       <SelectContent>
-                        {activeProducts.map((product) => (
-                          <SelectItem key={product._id} value={product._id}>
-                            {product.name} - ${product.priceHT.toFixed(2)} HT
+                        {activeProducts.map((p) => (
+                          <SelectItem key={p._id} value={p._id}>
+                            <div className="flex flex-col">
+                              <span className="font-bold">{p.name}</span>
+                              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                {p.category === ProductCategory.ARTICLE ? (
+                                  <>
+                                    <Package size={10} />
+                                    Stock: {p.stockQuantity}
+                                  </>
+                                ) : (
+                                  <span className="text-purple-600 font-bold italic">
+                                    Service
+                                  </span>
+                                )}
+                                <span>•</span>
+                                <span>${p.priceHT} HT</span>
+                              </span>
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>

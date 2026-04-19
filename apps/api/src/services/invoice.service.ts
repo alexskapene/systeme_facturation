@@ -4,6 +4,7 @@ import Product from '../models/Product';
 import * as stockService from './stock.service';
 import { IInvoice, InvoiceStatus } from '../types/invoice.types';
 import { StockMovementType } from '../types/stock.types';
+import { ProductCategory } from '../types/product.types';
 
 /**
  * Générer un numéro de facture unique (Ex: FAC-2024-0001)
@@ -28,10 +29,14 @@ export const createInvoice = async (
     if (!product) throw new Error(`Produit ${item.product} non trouvé`);
     if (!product.active)
       throw new Error(`Le produit ${product.name} n'est plus en vente`);
-    if (product.stockQuantity < item.quantity) {
-      throw new Error(
-        `Stock insuffisant pour ${product.name} (Dispo: ${product.stockQuantity})`,
-      );
+
+    // Vérifier le stock uniquement pour les ARTICLES
+    if (product.category === ProductCategory.ARTICLE) {
+      if (product.stockQuantity < item.quantity) {
+        throw new Error(
+          `Stock insuffisant pour ${product.name} (Dispo: ${product.stockQuantity})`,
+        );
+      }
     }
 
     const unitHT = product.priceHT;
@@ -51,14 +56,16 @@ export const createInvoice = async (
       totalPriceTTC: lineTTC,
     });
 
-    // Déduire du stock via un mouvement de type OUT_SALE
-    await stockService.addStockMovement({
-      product: product._id as Types.ObjectId,
-      type: StockMovementType.OUT_SALE,
-      quantity: item.quantity,
-      reason: `Vente Facture en cours de génération`,
-      performedBy: userId,
-    });
+    // Déduire du stock uniquement pour les ARTICLES via un mouvement de type OUT_SALE
+    if (product.category === ProductCategory.ARTICLE) {
+      await stockService.addStockMovement({
+        product: product._id as Types.ObjectId,
+        type: StockMovementType.OUT_SALE,
+        quantity: item.quantity,
+        reason: `Vente Facture en cours de génération`,
+        performedBy: userId,
+      });
+    }
   }
 
   // Créer la facture finale

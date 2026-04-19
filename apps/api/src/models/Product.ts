@@ -1,8 +1,14 @@
 import mongoose, { Schema } from 'mongoose';
-import { IProduct } from '../types/product.types';
+import { IProduct, ProductCategory } from '../types/product.types';
 
 const ProductSchema = new Schema(
   {
+    category: {
+      type: String,
+      enum: Object.values(ProductCategory),
+      default: ProductCategory.ARTICLE,
+      required: true,
+    },
     name: {
       type: String,
       required: true,

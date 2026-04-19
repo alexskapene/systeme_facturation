@@ -8,7 +8,6 @@ import {
   TrendingUp,
   AlertTriangle,
   ChevronRight,
-  Clock,
   Loader2,
   Euro,
 } from 'lucide-react';
@@ -51,6 +50,7 @@ const StatCard = ({
 );
 
 const DashboardPage = () => {
+  const { user } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
   const { stats, isLoading, error } = useAppSelector(
     (state) => state.dashboard,
@@ -84,15 +84,12 @@ const DashboardPage = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-foreground tracking-tight flex items-center gap-3">
-            Tableau de Bord
+            Bienvenue, {user?.firstName}..
           </h1>
           <p className="text-muted-foreground font-medium mt-1">
-            Résumé de l'activité commerciale et de l'état des stocks.
+            Résumé de l'activité commerciale et de l'état des stocks dans votre
+            tableau de bord.
           </p>
-        </div>
-        <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground bg-muted/50 px-4 py-2 rounded-lg border">
-          <Clock size={16} />
-          Dernière mise à jour: {new Date().toLocaleTimeString()}
         </div>
       </div>
 

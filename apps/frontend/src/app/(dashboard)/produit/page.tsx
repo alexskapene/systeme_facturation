@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableBody,
@@ -36,7 +37,8 @@ import {
   Loader2,
   Package,
 } from 'lucide-react';
-import { type Product, type CreateProductDTO } from '@/types/produit';
+import { Product, CreateProductDTO, ProductCategory } from '@/types/produit';
+import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import {
   fetchProducts,
@@ -58,6 +60,7 @@ export default function ProduitsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const [formData, setFormData] = useState({
+    category: ProductCategory.ARTICLE,
     name: '',
     description: '',
     priceHT: '',
@@ -84,12 +87,13 @@ export default function ProduitsPage() {
     if (product) {
       setEditingProduct(product);
       setFormData({
+        category: product.category || ProductCategory.ARTICLE,
         name: product.name,
         description: product.description || '',
         priceHT: String(product.priceHT),
         tvaRate: String(product.tvaRate),
-        stockQuantity: String(product.stockQuantity),
-        minStockQuantity: String(product.minStockQuantity),
+        stockQuantity: String(product.stockQuantity || 0),
+        minStockQuantity: String(product.minStockQuantity || 0),
         supplier:
           typeof product.supplier === 'string'
             ? product.supplier
@@ -98,6 +102,7 @@ export default function ProduitsPage() {
     } else {
       setEditingProduct(null);
       setFormData({
+        category: ProductCategory.ARTICLE,
         name: '',
         description: '',
         priceHT: '',
@@ -114,13 +119,20 @@ export default function ProduitsPage() {
     e.preventDefault();
 
     const data: CreateProductDTO = {
+      category: formData.category,
       name: formData.name,
       description: formData.description,
       supplier: formData.supplier,
       priceHT: parseFloat(formData.priceHT),
       tvaRate: parseFloat(formData.tvaRate),
-      stockQuantity: parseInt(formData.stockQuantity),
-      minStockQuantity: parseInt(formData.minStockQuantity),
+      stockQuantity:
+        formData.category === ProductCategory.ARTICLE
+          ? parseInt(formData.stockQuantity)
+          : 0,
+      minStockQuantity:
+        formData.category === ProductCategory.ARTICLE
+          ? parseInt(formData.minStockQuantity)
+          : 0,
     };
 
     if (editingProduct) {
@@ -167,7 +179,29 @@ export default function ProduitsPage() {
             <form onSubmit={handleSubmit}>
               <FieldGroup className="space-y-4">
                 <Field>
-                  <FieldLabel>Nom du produit</FieldLabel>
+                  <FieldLabel>Catégorie</FieldLabel>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value: ProductCategory) =>
+                      setFormData({ ...formData, category: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choisir une catégorie" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={ProductCategory.ARTICLE}>
+                        Article (Physique)
+                      </SelectItem>
+                      <SelectItem value={ProductCategory.SERVICE}>
+                        Service (Prestation)
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+
+                <Field>
+                  <FieldLabel>Nom du produit / service</FieldLabel>
                   <Input
                     value={formData.name}
                     onChange={(e) =>
@@ -237,36 +271,38 @@ export default function ProduitsPage() {
                   </Field>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <Field>
-                    <FieldLabel>Stock Initial</FieldLabel>
-                    <Input
-                      type="number"
-                      value={formData.stockQuantity}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          stockQuantity: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel>Stock Min Alert</FieldLabel>
-                    <Input
-                      type="number"
-                      value={formData.minStockQuantity}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          minStockQuantity: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                  </Field>
-                </div>
+                {formData.category === ProductCategory.ARTICLE && (
+                  <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-1 duration-300">
+                    <Field>
+                      <FieldLabel>Stock Initial</FieldLabel>
+                      <Input
+                        type="number"
+                        value={formData.stockQuantity}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            stockQuantity: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>Stock Min Alert</FieldLabel>
+                      <Input
+                        type="number"
+                        value={formData.minStockQuantity}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            minStockQuantity: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    </Field>
+                  </div>
+                )}
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading && (
@@ -328,7 +364,22 @@ export default function ProduitsPage() {
                   >
                     <TableCell className="font-medium">
                       <div>
-                        <div className="font-bold">{product.name}</div>
+                        <div className="flex items-center gap-2">
+                          <div className="font-bold">{product.name}</div>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              'text-[10px] font-bold py-0 h-5',
+                              product.category === ProductCategory.SERVICE
+                                ? 'bg-purple-50 text-purple-600 border-purple-100'
+                                : 'bg-blue-50 text-blue-600 border-blue-100',
+                            )}
+                          >
+                            {product.category === ProductCategory.SERVICE
+                              ? 'Service'
+                              : 'Article'}
+                          </Badge>
+                        </div>
                         <div className="text-xs text-muted-foreground truncate max-w-[200px]">
                           {product.description || 'Pas de description'}
                         </div>
@@ -345,11 +396,17 @@ export default function ProduitsPage() {
                       ${product.priceTTC.toFixed(2)}
                     </TableCell>
                     <TableCell className="text-center">
-                      <span
-                        className={`font-bold ${product.stockQuantity <= product.minStockQuantity ? 'text-destructive' : ''}`}
-                      >
-                        {product.stockQuantity}
-                      </span>
+                      {product.category === ProductCategory.ARTICLE ? (
+                        <span
+                          className={`font-bold ${product.stockQuantity <= product.minStockQuantity ? 'text-destructive' : ''}`}
+                        >
+                          {product.stockQuantity}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground text-xs italic">
+                          N/A
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">

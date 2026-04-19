@@ -1,5 +1,11 @@
+export enum ProductCategory {
+  ARTICLE = 'ARTICLE',
+  SERVICE = 'SERVICE',
+}
+
 export interface Product {
   _id: string;
+  category: ProductCategory;
   name: string;
   description?: string;
   priceHT: number;
@@ -15,6 +21,7 @@ export interface Product {
 }
 
 export interface CreateProductDTO {
+  category: ProductCategory;
   name: string;
   description?: string;
   priceHT: number;
