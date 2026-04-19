@@ -19,7 +19,10 @@ import {
 import { useLogout } from '@/lib/useLogout';
 import React from 'react';
 
-import { Bell, Menu, User } from 'lucide-react';
+import { Bell, Menu, User as LogOut, Settings, UserCircle } from 'lucide-react';
+import { useAppSelector } from '@/hooks/redux';
+import { getRoleLabel } from '@/types/user';
+import Link from 'next/link';
 
 interface TopbarProps {
   isExpanded: boolean;
@@ -28,6 +31,7 @@ interface TopbarProps {
 
 export default function Topbar({ isExpanded, onToggle }: TopbarProps) {
   const logout = useLogout();
+  const { user } = useAppSelector((state) => state.auth);
   const [openLogout, setOpenLogout] = React.useState(false);
 
   return (
@@ -73,47 +77,73 @@ export default function Topbar({ isExpanded, onToggle }: TopbarProps) {
                 variant="ghost"
                 className="flex items-center gap-3 rounded-xl px-2 h-14 border-none focus-visible:ring-0 transition-all"
               >
-                <Avatar className="h-10 w-10 rounded-full overflow-hidden">
-                  <AvatarFallback className="rounded-lg bg-slate-200">
-                    <User className="h-10 w-10 text-slate-500" />{' '}
+                <Avatar className="h-10 w-10 rounded-full overflow-hidden border-2 border-slate-100 shadow-sm">
+                  <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                    {user?.firstName?.[0]}
+                    {user?.name?.[0]}
                   </AvatarFallback>
                 </Avatar>
 
                 <div className="hidden md:flex flex-col items-start leading-tight">
-                  <span className="text-sm font-semibold text-slate-800">
-                    Admin
+                  <span className="text-sm font-bold text-slate-800">
+                    {user ? `${user.firstName} ${user.name}` : 'Utilisateur'}
                   </span>
-                  <span className="text-xs text-slate-500">Administrateur</span>
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                    {user ? getRoleLabel(user.role) : 'Chargement...'}
+                  </span>
                 </div>
               </Button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent
               align="end"
-              className="w-56 mt-2 rounded-xl shadow-lg p-2"
+              className="w-64 mt-2 rounded-2xl shadow-xl p-2 border-none"
             >
-              <DropdownMenuLabel className="text-[11px] font-bold text-slate-400 px-3 py-2 uppercase tracking-wider">
-                Mon Compte
+              <div className="px-3 py-4 flex items-center gap-3 bg-slate-50 rounded-xl mb-2">
+                <Avatar className="h-12 w-12 rounded-full border-2 border-white shadow-sm">
+                  <AvatarFallback className="bg-primary text-white font-bold">
+                    {user?.firstName?.[0]}
+                    {user?.name?.[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col overflow-hidden">
+                  <span className="text-sm font-bold text-slate-800 truncate">
+                    {user?.firstName} {user?.name}
+                  </span>
+                  <span className="text-[11px] text-slate-500 truncate lowercase italic">
+                    {user?.email}
+                  </span>
+                </div>
+              </div>
+
+              <DropdownMenuLabel className="text-[10px] font-black text-slate-400 px-3 py-2 uppercase tracking-widest">
+                Navigation
               </DropdownMenuLabel>
 
               <DropdownMenuSeparator className="bg-slate-100" />
 
-              <DropdownMenuItem className="cursor-pointer rounded-lg py-2 focus:bg-slate-50">
-                Profil
-              </DropdownMenuItem>
+              <Link href="/profil">
+                <DropdownMenuItem className="cursor-pointer rounded-xl py-2.5 focus:bg-primary/5 focus:text-primary transition-colors gap-3">
+                  <UserCircle className="h-4 w-4" />
+                  <span className="font-semibold text-sm">Mon Profil</span>
+                </DropdownMenuItem>
+              </Link>
 
-              <DropdownMenuItem className="cursor-pointer rounded-lg py-2 focus:bg-slate-50">
-                Paramètres
-              </DropdownMenuItem>
+              <Link href="/parametres">
+                <DropdownMenuItem className="cursor-pointer rounded-xl py-2.5 focus:bg-primary/5 focus:text-primary transition-colors gap-3">
+                  <Settings className="h-4 w-4" />
+                  <span className="font-semibold text-sm">Paramètres</span>
+                </DropdownMenuItem>
+              </Link>
 
               <DropdownMenuSeparator className="bg-slate-100" />
 
-              {/* 👇 ON OUVRE LE MODAL AU LIEU DE LOGOUT DIRECT */}
               <DropdownMenuItem
                 onClick={() => setOpenLogout(true)}
-                className="cursor-pointer rounded-lg py-2 text-red-500 font-semibold focus:bg-red-50 focus:text-red-500"
+                className="cursor-pointer rounded-xl py-2.5 text-red-500 font-bold focus:bg-red-50 focus:text-red-600 transition-colors gap-3"
               >
-                Déconnexion
+                <LogOut className="h-4 w-4" />
+                <span className="text-sm">Déconnexion</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -1,16 +1,12 @@
-export type UserRole =
-  | 'SUPER_ADMIN'
-  | 'ADMIN'
-  | 'COMPTABLE'
-  | 'GESTIONNAIRE'
-  | 'AGENT_VENTE';
+import { Role } from './user';
 
 export interface User {
   id: string;
   name: string;
   firstName: string;
   email: string;
-  role: UserRole;
+  role: Role;
+  createdAt?: string;
 }
 
 export interface AuthState {
