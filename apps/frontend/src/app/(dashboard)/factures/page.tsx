@@ -320,8 +320,8 @@ export default function FacturesPage() {
         </h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => handleOpenDialog()}>
-              <BadgePlus /
+            <Button onClick={() => setIsDialogOpen(true)}>
+              <BadgePlus />
               Nouvelle Facture
             </Button>
           </DialogTrigger>

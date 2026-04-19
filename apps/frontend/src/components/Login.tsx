@@ -96,7 +96,7 @@ export default function LoginPage() {
 
           {/* FOOTER */}
           <p className="text-sm text-center text-gray-600">
-            Vous n'avez pas de compte ?{' '}
+            Vous n&apos;avez pas de compte ?{' '}
             <a
               href="/register"
               className="text-black font-medium hover:underline"
