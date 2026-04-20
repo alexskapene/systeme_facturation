@@ -19,7 +19,7 @@ import {
 import { useLogout } from '@/lib/useLogout';
 import React from 'react';
 
-import { Menu, User as LogOut, Settings, UserCircle } from 'lucide-react';
+import { Menu, User as LogOut, UserCircle } from 'lucide-react';
 import { useAppSelector } from '@/hooks/redux';
 import { getRoleLabel } from '@/types/user';
 import Link from 'next/link';
@@ -114,14 +114,6 @@ export default function Topbar({ isExpanded, onToggle }: TopbarProps) {
                   <span className="font-semibold text-sm">Mon Profil</span>
                 </DropdownMenuItem>
               </Link>
-
-              <Link href="/parametres">
-                <DropdownMenuItem className="cursor-pointer rounded-xl py-2.5 focus:bg-primary/5 focus:text-primary transition-colors gap-3">
-                  <Settings className="h-4 w-4" />
-                  <span className="font-semibold text-sm">Paramètres</span>
-                </DropdownMenuItem>
-              </Link>
-
               <DropdownMenuSeparator className="bg-slate-100" />
 
               <DropdownMenuItem
