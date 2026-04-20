@@ -47,3 +47,10 @@ export const getPaymentsByInvoice = async (invoiceId: string) => {
     'name firstName',
   );
 };
+
+export const getAllPayments = async () => {
+  return await Payment.find()
+    .populate('invoice', 'invoiceNumber')
+    .populate('recordedBy', 'name firstName')
+    .sort({ date: -1 });
+};

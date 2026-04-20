@@ -8,6 +8,7 @@ import invoiceReducer from './slices/invoiceSlice';
 import userReducer from './slices/userSlice';
 import stockReducer from './slices/stockSlice';
 import dashboardReducer from './slices/dashboardSlice';
+import paymentReducer from './slices/paymentSlice';
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +20,7 @@ export const store = configureStore({
     users: userReducer,
     dashboard: dashboardReducer,
     stock: stockReducer,
+    payments: paymentReducer,
   },
 });
 
