@@ -8,7 +8,7 @@
     "lint": "turbo run lint",
     "check-types": "turbo run check-types",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
-    "prepare": "husky install"
+    "prepare": "is-ci || husky install"
   },
   "lint-staged": {
     "*.{ts,tsx,js}": [
@@ -21,6 +21,9 @@
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^20.5.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "commitizen": "^4.2.4",
