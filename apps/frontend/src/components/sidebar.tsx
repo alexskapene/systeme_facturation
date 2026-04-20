@@ -17,14 +17,12 @@ import {
 
 import {
   ArrowLeftRight,
-  BarChart3,
   CirclePile,
   FileText,
   Home,
   IdCardLanyard,
   LogOut,
   Package,
-  Settings,
   Users,
   UsersRound,
 } from 'lucide-react';
@@ -80,18 +78,6 @@ const navItems = [
     href: '/users',
     label: 'Utilisateurs',
     icon: UsersRound,
-    roles: [Role.SUPER_ADMIN, Role.ADMIN],
-  },
-  {
-    href: '/rapports',
-    label: 'Rapport',
-    icon: BarChart3,
-    roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.COMPTABLE],
-  },
-  {
-    href: '/parametres',
-    label: 'Parametres',
-    icon: Settings,
     roles: [Role.SUPER_ADMIN, Role.ADMIN],
   },
 ];

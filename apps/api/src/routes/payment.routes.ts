@@ -22,6 +22,15 @@ router.post(
 
 /**
  * @swagger
+ * /payments:
+ *   get:
+ *     summary: Liste de tous les paiements enregistrés
+ *     tags: [Payments]
+ */
+router.get('/', paymentCtrl.getPayments);
+
+/**
+ * @swagger
  * /payments/invoice/{invoiceId}:
  *   get:
  *     summary: Historique des paiements d'une facture

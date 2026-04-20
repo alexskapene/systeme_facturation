@@ -21,3 +21,8 @@ export const getInvoicePayments = async (req: AuthRequest, res: Response) => {
   );
   res.status(200).json({ success: true, data: payments });
 };
+
+export const getPayments = async (_req: AuthRequest, res: Response) => {
+  const payments = await paymentService.getAllPayments();
+  res.status(200).json({ success: true, data: payments });
+};
