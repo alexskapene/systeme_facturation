@@ -6,14 +6,19 @@ export const createClient = async (
   clientData: Partial<IClient>,
   userId: Types.ObjectId,
 ) => {
+  // Nettoyer les chaines vides pour éviter les collisions d'index unique (NIF)
+  const sanitizedData = { ...clientData };
+  if (sanitizedData.nif === '') delete sanitizedData.nif;
+  if (sanitizedData.rccm === '') delete sanitizedData.rccm;
+
   // Vérifier si le NIF existe déjà (si fourni)
-  if (clientData.nif) {
-    const existingClient = await Client.findOne({ nif: clientData.nif });
+  if (sanitizedData.nif) {
+    const existingClient = await Client.findOne({ nif: sanitizedData.nif });
     if (existingClient) throw new Error('Un client avec ce NIF existe déjà');
   }
 
   return await Client.create({
-    ...clientData,
+    ...sanitizedData,
     createdBy: userId,
   });
 };
@@ -37,7 +42,11 @@ export const updateClient = async (
   id: string,
   updateData: Partial<IClient>,
 ) => {
-  const client = await Client.findByIdAndUpdate(id, updateData, {
+  const sanitizedData = { ...updateData };
+  if (sanitizedData.nif === '') delete sanitizedData.nif;
+  if (sanitizedData.rccm === '') delete sanitizedData.rccm;
+
+  const client = await Client.findByIdAndUpdate(id, sanitizedData, {
     new: true,
     runValidators: true,
   });
