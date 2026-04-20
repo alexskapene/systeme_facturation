@@ -19,7 +19,7 @@ import {
 import { useLogout } from '@/lib/useLogout';
 import React from 'react';
 
-import { Bell, Menu, User as LogOut, Settings, UserCircle } from 'lucide-react';
+import { Menu, User as LogOut, UserCircle } from 'lucide-react';
 import { useAppSelector } from '@/hooks/redux';
 import { getRoleLabel } from '@/types/user';
 import Link from 'next/link';
@@ -56,20 +56,6 @@ export default function Topbar({ isExpanded, onToggle }: TopbarProps) {
 
         {/* RIGHT */}
         <div className="flex items-center gap-6">
-          {/* Notifications */}
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full h-11 w-11"
-            >
-              <Bell className="h-7 w-7 text-[#4b5563] fill-[#4b5563]" />
-            </Button>
-            <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#e14d4d] text-[10px] font-bold text-white border-[2.5px] border-white shadow-sm">
-              1
-            </span>
-          </div>
-
           {/* USER MENU */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -128,14 +114,6 @@ export default function Topbar({ isExpanded, onToggle }: TopbarProps) {
                   <span className="font-semibold text-sm">Mon Profil</span>
                 </DropdownMenuItem>
               </Link>
-
-              <Link href="/parametres">
-                <DropdownMenuItem className="cursor-pointer rounded-xl py-2.5 focus:bg-primary/5 focus:text-primary transition-colors gap-3">
-                  <Settings className="h-4 w-4" />
-                  <span className="font-semibold text-sm">Paramètres</span>
-                </DropdownMenuItem>
-              </Link>
-
               <DropdownMenuSeparator className="bg-slate-100" />
 
               <DropdownMenuItem
