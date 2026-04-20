@@ -130,17 +130,17 @@ export default function PaymentPage() {
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body { font-family: 'Inter', sans-serif; padding: 40px; color: #333; line-height: 1.6; }
             .header { display: flex; justify-content: space-between; margin-bottom: 40px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px; }
-            .company { font-size: 24px; font-weight: bold; color: #16a34a; }
-            .receipt-title { font-size: 32px; color: #16a34a; text-align: right; font-weight: 800; }
+            .company { font-size: 24px; font-weight: bold; color: #145ca1; }
+            .receipt-title { font-size: 32px; color: #145ca1; text-align: right; font-weight: 800; }
             .receipt-info { color: #666; text-align: right; margin-top: 5px; font-weight: 600; }
             .section { margin-bottom: 30px; }
-            .section-title { font-size: 12px; color: #94a3b8; margin-bottom: 8px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.05em; }
-            .amount-box { background: #f0fdf4; padding: 30px; border-radius: 12px; border: 1px solid #bbf7d0; text-align: center; margin: 20px 0; }
-            .amount-label { font-size: 14px; color: #166534; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
-            .amount-value { font-size: 42px; font-weight: 900; color: #16a34a; }
+            .section-title { font-size: 12px; color: var(--primary); margin-bottom: 8px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.05em; }
+            .amount-box { background: #145ca1; padding: 30px; border-radius: 12px; border: 1px solid #ffffff; text-align: center; margin: 20px 0; }
+            .amount-label { font-size: 14px; color: #ffffff; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+            .amount-value { font-size: 42px; font-weight: 900; color:#ffffff; }
             .details-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             .details-table td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
-            .details-table td:first-child { font-weight: 600; color: #64748b; width: 200px; }
+            .details-table td:first-child { font-weight: 600; color: var(--background); width: 200px; }
             .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 60px; }
             .signature-box { border-top: 1px solid #e2e8f0; padding-top: 10px; text-align: center; font-size: 12px; color: #94a3b8; }
             .footer { margin-top: 60px; text-align: center; color: #94a3b8; font-size: 12px; border-top: 1px solid #f1f5f9; padding-top: 20px; }
@@ -149,8 +149,8 @@ export default function PaymentPage() {
         <body>
           <div class="header">
             <div>
-              <div class="company">eTax Solution RDC</div>
-              <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Système de Facturation & Recettes</div>
+              <div class="company" style={{ color: var(--primary) }}>eTax Solution RDC</div>
+              <div  style={{ fontSize: '12px', color: var(--primary), marginTop: '4px' }}>Système de Facturation & Recettes</div>
             </div>
             <div>
               <div class="receipt-title">REÇU</div>
