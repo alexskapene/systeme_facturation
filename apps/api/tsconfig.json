@@ -7,7 +7,11 @@
     "strict": true /* Activer les vérifications strictes (très important pour du code financier) */,
     "esModuleInterop": true /* Permet d'importer correctement les modules CommonJS */,
     "skipLibCheck": true /* Ignore la vérification des types dans les node_modules pour gagner du temps */,
-    "forceConsistentCasingInFileNames": true /* Sécurité pour la casse des noms de fichiers */
+    "forceConsistentCasingInFileNames": true /* Sécurité pour la casse des noms de fichiers */,
+    "baseUrl": ".",
+    "paths": {
+      "*": ["node_modules/*"]
+    }
   },
   "include": ["src/**/*"] /* Fichiers à inclure */,
   "exclude": ["node_modules", "**/*.spec.ts"] /* Fichiers à exclure */
