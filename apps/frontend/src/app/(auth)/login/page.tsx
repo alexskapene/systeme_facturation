@@ -37,6 +37,9 @@ export default function LoginPage() {
       setErreur(null);
     }
     dispatch(loginUser({ email, password }));
+    if (isAuthenticated) {
+      router.push('/');
+    }
   };
 
   return (
