@@ -1,18 +1,15 @@
 {
   "compilerOptions": {
-    "target": "ES2022" /* Version de JavaScript ciblée */,
-    "module": "CommonJS" /* Système de modules utilisé par Node.js */,
-    "rootDir": "./src" /* Dossier source */,
-    "outDir": "./dist" /* Dossier de destination après compilation (build) */,
-    "strict": true /* Activer les vérifications strictes (très important pour du code financier) */,
-    "esModuleInterop": true /* Permet d'importer correctement les modules CommonJS */,
-    "skipLibCheck": true /* Ignore la vérification des types dans les node_modules pour gagner du temps */,
-    "forceConsistentCasingInFileNames": true /* Sécurité pour la casse des noms de fichiers */,
-    "baseUrl": ".",
-    "paths": {
-      "*": ["node_modules/*"]
-    }
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*"] /* Fichiers à inclure */,
-  "exclude": ["node_modules", "**/*.spec.ts"] /* Fichiers à exclure */
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
 }
